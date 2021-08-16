@@ -1,0 +1,49 @@
+model
+{
+    mu.psi ~ dnorm(0.00000E+00, 0.01)
+    mu.p ~ dnorm(0.00000E+00, 0.01)
+    sigma.psi.sp ~ dunif(0.00000E+00, 10)
+    sigma.p.sp ~ dunif(0.00000E+00, 10)
+    tau.psi.sp <- 1/(sigma.psi.sp * sigma.psi.sp)
+    tau.p.sp <- 1/(sigma.p.sp * sigma.p.sp)
+    for (sp in 1:nsp) {
+        psi.sp[sp] ~ dnorm(0.00000E+00, tau.psi.sp)
+        p.sp[sp] ~ dnorm(0.00000E+00, tau.p.sp)
+    }
+    sigma.p.site ~ dunif(0.00000E+00, 10)
+    tau.p.site <- 1/(sigma.p.site * sigma.p.site)
+    for (site in 1:nsite) {
+        for (yr in 1:nyr) {
+            p.site[site, yr] ~ dnorm(0.00000E+00, tau.p.site)
+        }
+    }
+    mu.psi.yr ~ dnorm(0.00000E+00, 0.01)
+    sigma.psi.yr ~ dunif(0.00000E+00, 10)
+    tau.psi.yr <- 1/(sigma.psi.yr * sigma.psi.yr)
+    for (sp in 1:nsp) {
+        psi.yr[sp] ~ dnorm(mu.psi.yr, tau.psi.yr)
+    }
+    p.yr ~ dnorm(0.00000E+00, 0.01)
+    for (sp in 1:nsp) {
+        for (yr in 1:nyr) {
+            logit(psi[sp, yr]) <- mu.psi + psi.yr[sp] * (yr - 
+                1) + psi.sp[sp]
+            for (site in 1:nsite) {
+                logit(p[sp, site, yr]) <- mu.p + p.yr * (yr - 
+                  1) + p.sp[sp] + p.site[site, yr]
+            }
+        }
+    }
+    for (sp in 1:nsp) {
+        for (site in 1:nsite) {
+            for (yr in 1:nyr) {
+                Z[sp, site, yr] ~ dbern(psi[sp, yr])
+            }
+        }
+    }
+    for (ind in 1:nind) {
+        p.eff[ind] <- Z[sp[ind], site[ind], yr[ind]] * p[sp[ind], 
+            site[ind], yr[ind]]
+        X[ind] ~ dbern(p.eff[ind])
+    }
+}
