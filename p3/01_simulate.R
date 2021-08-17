@@ -1,8 +1,8 @@
-###### Part 1 #####
+###### Part 3 #####
 
 ## 1. 
 # Simulation:
-# - All species are everywhere, no ranges
+# - Species have spatially explicit ranges
 # - Missing visits but same visit for all species 
 
 # Modeling: 
@@ -38,7 +38,8 @@ base_scenario <- data.frame(nsp          = 50,
                              mu.v.0 = 0, 
                              mu.v.yr = -0.5,
                              ## type sym
-                             type.range = "all",
+                             type.range = "polys",
+                             type.visit = 'visit_same_sp',
                              prop.visits.same = 1)
 
 r <- data.frame(r = 1:5)
@@ -50,8 +51,6 @@ nyr <- data.frame(nyr = c(2,5,10))
 all_scenarios <- bind_rows(expand.grid.df(base_scenario, p.yr, data.frame(mu.phi.yr = 0, mu.gam.yr = 0), r, nyr),
                            expand.grid.df(base_scenario, mu.phi.yr, data.frame(p.yr= 0, mu.gam.yr = 0), r, nyr),
                            expand.grid.df(base_scenario, mu.gam.yr, data.frame(mu.phi.yr = 0,  p.yr = 0), r, nyr))
-
-
 
 run_all_simulation_1 <-function(s, all_scenarios){
 
