@@ -93,24 +93,11 @@ PolyToMatrix <- function(polys){
   return(matrix_ls)
 }
 
-polys <- GenPoly(numpoly=5)
-ranges <- PolyToMatrix(polys)
-
-ggplot()+
-  geom_sf(polys[[2]], mapping=aes(), fill=NA, color="grey90")+
-  geom_sf(polys[[1]][[5]], mapping=aes(), fill="#7570b3", color="#7570b3", alpha=0.10)+
-  geom_sf(polys[[1]][[4]], mapping=aes(), fill="#e7298a", color="#e7298a", alpha=0.10)+
-  geom_sf(polys[[1]][[3]], mapping=aes(), fill="#7570b3", color="#7570b3", alpha=0.10)+
-  geom_sf(polys[[1]][[2]], mapping=aes(), fill="#e7298a", color="#e7298a", alpha=0.10)+
-  geom_sf(polys[[1]][[1]], mapping=aes(), fill="#e6ab02", color="#e6ab02", alpha=0.10)+
-  theme_void()
-
 ## expit and logit functions
 expit <- function(x) 1/(1+exp(-x))
 logit <- function(x) log(x/(1-x))
 
 make.ranges <- function(nsp, nsite, type.range) {
-  #### this needs to be spatially explicit! ~ eventually
 
   if(type.range == 'all'){
     nsite.by.sp <- rep(nsite, nsp)
@@ -120,6 +107,10 @@ make.ranges <- function(nsp, nsite, type.range) {
   } else if(type.range == 'logn') {
     prop.sites <- rbeta(nsp, shape1=1, shape2=3)
     nsite.by.sp <- round(nsite * prop.sites)
+  } else if(type.range == 'polys'){
+    polys <- GenPoly(numpoly=nsp, gridsize=sqrt(nsite))
+    res <- array(unlist(PolyToMatrix(polys)), dim=c(nsp, nsite))
+    return(res)
    }
   
    get.sites.within.range <- function(ii) {
@@ -248,8 +239,7 @@ make.data <- function(## data structure set up
   ## Simulate species ranges them for the
   ## specified number of species and sites.
   
-  polys <- GenPoly(numpoly=nsp, gridsize=sqrt(nsite))
-  sp.range <- array(unlist(PolyToMatrix(polys)), dim=c(nsp, nsite))
+  sp.range <- make.ranges(nsp, nsite, type.range)
   
   ## ------------------------------------------------------------
   ## Get visit history
