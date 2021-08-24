@@ -38,7 +38,7 @@ base_scenario <- data.frame(nsp          = 50,
                              type.range = "all",
                              type.visit = 'visit_miss')
 
-r <- data.frame(r = 1,2)
+r <- data.frame(r = c(1,2))
 p.yr <- data.frame(p.yr = c(-1, -0.5, 0, 0.5, 1))
 mu.psi.yr <- data.frame(mu.psi.yr = c(-1, -0.5, 0, 0.5, 1))
 nyr <- data.frame(nyr = c(10))
@@ -82,6 +82,7 @@ run_all_simulation_1 <-function(s, all_scenarios){
                    "_mu.psi.yr_",all_scenarios[s,'mu.psi.yr'], "_nyr_",all_scenarios[s,'nyr'],
                    "_prop.visits.same_",all_scenarios[s,'prop.visits.same'],
                    "_range_", all_scenarios[s,'type.range'], "_visit_", all_scenarios[s,'type.visit'],
+                   "_s_", s,
                    ".RData"))
 
     

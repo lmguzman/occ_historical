@@ -30,7 +30,7 @@ run_prep_model <- function(file, case, model){
   #Zst <- array(1,dim=c(sim.data$nsite,sim.data$nyr,sim.data$nsp))
 
   Zint <- aperm(sim.data$X[,,,1], c(2,3,1))
-  Zint[is.na(Zint)] <- 1
+  Zint[is.na(Zint)] <- 0
   
   inits <- list(Z = Zint,
                 mu.p.0 = 0,
@@ -82,6 +82,8 @@ run_prep_model <- function(file, case, model){
                  niter=n.iter,
                  nburnin=n.burnin,
                  nchains=n.chains)
+  
+  
   
   #### fix file name saving 
   save(res, data.prepped, sim.data,
