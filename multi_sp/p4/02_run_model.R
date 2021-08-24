@@ -2,16 +2,15 @@
 args <-
   commandArgs(trailingOnly=TRUE)
 
-
 library(parallel)
 library(stringr)
 source('multi_sp/simulation/src/prep_data.R')
 
-file_sim <- list.files("multi_sp/p2.2/outputs/sim.data/")
+file_sim <- list.files("multi_sp/p4/outputs/sim.data/")
 
 run_prep_model <- function(file, case, range, model){
   
-  load(paste0("multi_sp/p2.2/outputs/sim.data/", file), verbose = TRUE)
+  load(paste0("multi_sp/p4/outputs/sim.data/", file), verbose = TRUE)
   
   ## source model
   source(sprintf('multi_sp/simulation/models/%s.R', model))
@@ -75,19 +74,24 @@ run_prep_model <- function(file, case, range, model){
   
   #### fix file name saving 
   save(res, data.prepped, sim.data,
-       file=paste0("multi_sp/p2.2/outputs/model.res/", case, range, file))
+       file=paste0("multi_sp/p4/outputs/model.res/", case, range, file))
 }
 
 run_id <-
   as.numeric(args)
 print(run_id)
 
+
+  run_prep_model(file_sim[run_id], case = 'all', range="yes", model = 'ms-nimble')
   run_prep_model(file_sim[run_id], case = 'all', range="no", model = 'ms-nimble')
   
+  run_prep_model(file_sim[run_id], case = 'detected', range="yes", model = 'ms-nimble')
   run_prep_model(file_sim[run_id], case = 'detected', range="no", model = 'ms-nimble')
   
+  run_prep_model(file_sim[run_id], case = 'visits', range="yes", model = 'ms-nimble')
   run_prep_model(file_sim[run_id], case = 'visits', range="no", model = 'ms-nimble')
   
+  run_prep_model(file_sim[run_id], case = 'community', range="yes", model = 'ms-nimble')
   run_prep_model(file_sim[run_id], case = 'community', range="no", model = 'ms-nimble')
 
 
