@@ -1,3 +1,5 @@
+Change all models to non-dynamic model 
+
 1. All species are everywhere, no ranges, MS_all_all, MS_all_visits vs MS_all_detected for more than 2 eras <- this would be useful for a scenario that has small spatial scale 
 
 2. Visit patterns not the same for all species? visits independent for each species or same visits mu.v.yr = 0.5
