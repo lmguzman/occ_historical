@@ -82,7 +82,7 @@ run_id <-
   as.numeric(args)
 print(run_id)
 
-run_all <- function(run_id){
+
   run_prep_model(file_sim[run_id], case = 'all', model = 'ms-nimble')
   
   run_prep_model(file_sim[run_id], case = 'detected', model = 'ms-nimble')
@@ -90,7 +90,5 @@ run_all <- function(run_id){
   run_prep_model(file_sim[run_id], case = 'visits', model = 'ms-nimble')
   
   run_prep_model(file_sim[run_id], case = 'community', model = 'ms-nimble')
-}
 
-mclapply(1:length(file_sim), run_all, mc.cores = 4)
 
