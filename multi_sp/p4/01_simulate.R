@@ -35,7 +35,7 @@ base_scenario <- data.frame(nsp          = 50,
                              mu.v.0 = 0, 
                              mu.v.yr = -0.5,
                              ## type sym
-                             type.range = 'all',
+                             type.range = 'polys',
                              type.visit = 'visit_miss')
 
 r <- data.frame(r = c(1,2))
@@ -76,7 +76,7 @@ run_all_simulation_1 <- function(s, all_scenarios){
                         prop.visits.same = all_scenarios$prop.visits.same[s])
   
   save(sim.data,
-       file=paste0("multi_sp/p2.2/outputs/", "sim.data/",
+       file=paste0("multi_sp/p4/outputs/", "sim.data/",
                    
                    "_r_",all_scenarios[s,'r'],"_p.yr_",all_scenarios[s,'p.yr'],
                    "_mu.psi.yr_",all_scenarios[s,'mu.psi.yr'], "_nyr_",all_scenarios[s,'nyr'],
