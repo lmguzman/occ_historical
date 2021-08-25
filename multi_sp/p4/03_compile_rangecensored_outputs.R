@@ -5,7 +5,7 @@ library(purrr)
 library(dplyr)
 library(data.table)
 
-file_sim <- list.files("p4/outputs/model.res/", pattern="no")
+file_sim <- list.files("p4/outputs/model.res/", pattern="yes")
 
 compiled_res <- list()
 
@@ -36,4 +36,4 @@ for(i in 1:length(file_sim)){
 
 all_outputs <- rbindlist(compiled_res)
 
-saveRDS(all_outputs, 'p4/outputs/model.summary/all_outputs.rds')
+saveRDS(all_outputs, 'p4/outputs/model.summary/all_censored_outputs.rds')
