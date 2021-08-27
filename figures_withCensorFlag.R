@@ -19,7 +19,7 @@ main_plot <- function(case, censor, load_tf, intervals,...){
     
     output_p$sim <- rep(1:(nrow(output_p)/8), each = 8)
     
-    scenarios <- output_p[term %in% c('p.yr', 'mu.phi.yr', 'mu.gam.yr'), .(term, true_val, sim)] %>% 
+    scenarios <- output_p[term %in% c('p.yr', 'mu.psi.yr'), .(term, true_val, sim)] %>% 
       pivot_wider(names_from = 'term', values_from = 'true_val') 
     
     output_p_s <- output_p %>% 
@@ -30,37 +30,27 @@ main_plot <- function(case, censor, load_tf, intervals,...){
   
   ## varying detection ##
   
-  p_p.yr <- output_p_s[mu.phi.yr == 0 & mu.gam.yr == 0 & term == 'p.yr' & nyr != 2] %>% 
+  p_p.yr <- output_p_s[mu.psi.yr == 0 & term == 'p.yr'] %>% 
     ggplot() +
-    geom_point(aes(x = p.yr, y = estimate, colour = nyr, group = r), position = position_dodge(width = 0.2)) +
-    geom_linerange(aes(x = p.yr, ymin = lower, ymax = upper, colour = nyr, group = r), position = position_dodge(width = 0.2)) +
+    geom_point(aes(x = p.yr, y = estimate, group = r), position = position_dodge(width = 0.2)) +
+    geom_linerange(aes(x = p.yr, ymin = lower, ymax = upper, group = r), position = position_dodge(width = 0.2)) +
     theme_cowplot() +
     facet_wrap(~visit_mod) +
     geom_abline(intercept = 0, slope = 1, colour = 'grey', linetype = 'dashed') +
     theme(strip.background = element_blank()) +
     ylab('Estimated p.yr') + xlab('p.yr')
   
-  p_mu.phi.yr <- output_p_s[mu.phi.yr == 0 & mu.gam.yr == 0 & term == 'mu.phi.yr' & nyr != 2] %>% 
+  p_mu.psi.yr <- output_p_s[mu.psi.yr == 0 & term == 'mu.psi.yr'] %>% 
     ggplot() +
-    geom_point(aes(x = p.yr, y = estimate, colour = nyr, group = r), position = position_dodge(width = 0.2)) +
-    geom_linerange(aes(x = p.yr, ymin = lower, ymax = upper, colour = nyr, group = r), position = position_dodge(width = 0.2)) +
+    geom_point(aes(x = p.yr, y = estimate, group = r), position = position_dodge(width = 0.2)) +
+    geom_linerange(aes(x = p.yr, ymin = lower, ymax = upper, group = r), position = position_dodge(width = 0.2)) +
     theme_cowplot() +
     facet_wrap(~visit_mod) +
     geom_hline(yintercept = 0,  colour = 'grey', linetype = 'dashed') +
     theme(strip.background = element_blank()) +
-    ylab('Estimated mu.phi.yr') + xlab('p.yr')
+    ylab('Estimated mu.psi.yr') + xlab('p.yr')
   
-  p_mu.gam.yr <- output_p_s[mu.phi.yr == 0 & mu.gam.yr == 0 & term == 'mu.gam.yr' & nyr != 2] %>% 
-    ggplot() +
-    geom_point(aes(x = p.yr, y = estimate, colour = nyr, group = r), position = position_dodge(width = 0.2)) +
-    geom_linerange(aes(x = p.yr, ymin = lower, ymax = upper, colour = nyr, group = r), position = position_dodge(width = 0.2)) +
-    theme_cowplot() +
-    facet_wrap(~visit_mod) +
-    geom_hline(yintercept = 0,  colour = 'grey', linetype = 'dashed') +
-    theme(strip.background = element_blank()) +
-    ylab('Estimated mu.gam.yr') + xlab('p.yr')
-  
-  p_v_p <- plot_grid(p_p.yr, p_mu.phi.yr, p_mu.gam.yr, ncol = 1)
+  p_v_p <- plot_grid(p_p.yr, p_mu.psi.yr, ncol = 1)
   
   ggsave(p_v_p, filename = paste0("figures/",case,censor,"_v_p.jpeg"), height = 12)
   
@@ -69,77 +59,30 @@ main_plot <- function(case, censor, load_tf, intervals,...){
   
   ## varying persistence ##
   
-  p_p.yr_2 <- output_p_s[p.yr == 0 & mu.gam.yr == 0 & term == 'p.yr' & nyr != 2] %>% 
+  p_p.yr_2 <- output_p_s[p.yr == 0 & term == 'p.yr'] %>% 
     ggplot() +
-    geom_point(aes(x = mu.phi.yr, y = estimate, colour = nyr, group = r), position = position_dodge(width = 0.2)) +
-    geom_linerange(aes(x = mu.phi.yr, ymin = lower, ymax = upper, colour = nyr, group = r), position = position_dodge(width = 0.2)) +
+    geom_point(aes(x = mu.psi.yr, y = estimate, group = r), position = position_dodge(width = 0.2)) +
+    geom_linerange(aes(x = mu.psi.yr, ymin = lower, ymax = upper, group = r), position = position_dodge(width = 0.2)) +
     theme_cowplot() +
     facet_wrap(~visit_mod) +
     geom_hline(yintercept = 0,  colour = 'grey', linetype = 'dashed') +
     theme(strip.background = element_blank()) +
-    ylab('Estimated p.yr') + xlab('mu.phi.yr')
+    ylab('Estimated p.yr') + xlab('mu.psi.yr')
   
-  p_mu.phi.yr_2 <- output_p_s[p.yr == 0 & mu.gam.yr == 0 & term == 'mu.phi.yr' & nyr != 2] %>% 
+  p_mu.psi.yr_2 <- output_p_s[p.yr == 0 & term == 'mu.psi.yr'] %>% 
     ggplot() +
-    geom_point(aes(x = mu.phi.yr, y = estimate, colour = nyr, group = r), position = position_dodge(width = 0.2)) +
-    geom_linerange(aes(x = mu.phi.yr, ymin = lower, ymax = upper, colour = nyr, group = r), position = position_dodge(width = 0.2)) +
+    geom_point(aes(x = mu.psi.yr, y = estimate, group = r), position = position_dodge(width = 0.2)) +
+    geom_linerange(aes(x = mu.psi.yr, ymin = lower, ymax = upper, group = r), position = position_dodge(width = 0.2)) +
     theme_cowplot() +
     facet_wrap(~visit_mod) +
     geom_abline(intercept = 0, slope = 1, colour = 'grey', linetype = 'dashed') +
     theme(strip.background = element_blank()) +
-    ylab('Estimated mu.phi.yr') + xlab('mu.phi.yr')
+    ylab('Estimated mu.psi.yr') + xlab('mu.psi.yr')
   
-  p_mu.gam.yr_2 <- output_p_s[p.yr == 0 & mu.gam.yr == 0 & term == 'mu.gam.yr' & nyr != 2] %>% 
-    ggplot() +
-    geom_point(aes(x = mu.phi.yr, y = estimate, colour = nyr, group = r), position = position_dodge(width = 0.2)) +
-    geom_linerange(aes(x = mu.phi.yr, ymin = lower, ymax = upper, colour = nyr, group = r), position = position_dodge(width = 0.2)) +
-    theme_cowplot() +
-    facet_wrap(~visit_mod) +
-    geom_hline(yintercept = 0,  colour = 'grey', linetype = 'dashed') +
-    theme(strip.background = element_blank()) +
-    ylab('Estimated mu.gam.yr') + xlab('mu.phi.yr')
-  
-  p_v_mu.phi.yr <- plot_grid(p_p.yr_2, p_mu.phi.yr_2, p_mu.gam.yr_2, ncol = 1)
+  p_v_mu.phi.yr <- plot_grid(p_p.yr_2, p_mu.psi.yr_2, ncol = 1)
   
   ggsave(p_v_mu.phi.yr, filename = paste0("figures/",case,censor,"_v_mu.phi.yr.jpeg"), height = 12)
-  
-  
-  ## varying colonization ##
-  
-  p_p.yr_3 <- output_p_s[p.yr == 0 & mu.phi.yr == 0 & term == 'p.yr' & nyr != 2] %>% 
-    ggplot() +
-    geom_point(aes(x = mu.gam.yr, y = estimate, colour = nyr, group = r), position = position_dodge(width = 0.2)) +
-    geom_linerange(aes(x = mu.gam.yr, ymin = lower, ymax = upper, colour = nyr, group = r), position = position_dodge(width = 0.2)) +
-    theme_cowplot() +
-    facet_wrap(~visit_mod) +
-    geom_hline(yintercept = 0,  colour = 'grey', linetype = 'dashed') +
-    theme(strip.background = element_blank()) +
-    ylab('Estimated p.yr') + xlab('mu.gam.yr')
-  
-  p_mu.phi.yr_3 <- output_p_s[p.yr == 0 & mu.phi.yr == 0 & term == 'mu.phi.yr' & nyr != 2] %>% 
-    ggplot() +
-    geom_point(aes(x = mu.gam.yr, y = estimate, colour = nyr, group = r), position = position_dodge(width = 0.2)) +
-    geom_linerange(aes(x = mu.gam.yr, ymin = lower, ymax = upper, colour = nyr, group = r), position = position_dodge(width = 0.2)) +
-    theme_cowplot() +
-    facet_wrap(~visit_mod) +
-    geom_hline(yintercept = 0,  colour = 'grey', linetype = 'dashed') +
-    theme(strip.background = element_blank()) +
-    ylab('Estimated mu.phi.yr') + xlab('mu.gam.yr')
-  
-  p_mu.gam.yr_3 <- output_p_s[p.yr == 0 & mu.phi.yr == 0 & term == 'mu.gam.yr' & nyr != 2] %>% 
-    ggplot() +
-    geom_point(aes(x = mu.gam.yr, y = estimate, colour = nyr, group = r), position = position_dodge(width = 0.2)) +
-    geom_linerange(aes(x = mu.gam.yr, ymin = lower, ymax = upper, colour = nyr, group = r), position = position_dodge(width = 0.2)) +
-    theme_cowplot() +
-    facet_wrap(~visit_mod) +
-    geom_abline(intercept = 0, slope = 1, colour = 'grey', linetype = 'dashed') +
-    theme(strip.background = element_blank()) +
-    ylab('Estimated mu.gam.yr') + xlab('mu.gam.yr')
-  
-  p_v_mu.gam.yr <- plot_grid(p_p.yr_3, p_mu.phi.yr_3, p_mu.gam.yr_3, ncol = 1)
-  
-  ggsave(p_v_mu.gam.yr, filename = paste0("figures/",case,censor,"_v_mu.gam.yr.jpeg"), height = 12)
-  
+
 }
 
 
