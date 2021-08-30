@@ -33,14 +33,14 @@ base_scenario <- data.frame(nsp          = 50,
                              sigma.psi.yr = 0.2,
                              ## visit
                              mu.v.0 = 0, 
-                             mu.v.yr = -0.5,
+                             mu.v.yr = -0.1,
                              ## type sym
                              type.range = 'all',
                              type.visit = 'visit_miss')
 
 r <- data.frame(r = c(1,2))
-p.yr <- data.frame(p.yr = c(-1, -0.5, 0, 0.5, 1))
-mu.psi.yr <- data.frame(mu.psi.yr = c(-1, -0.5, 0, 0.5, 1))
+p.yr <- data.frame(p.yr = c(-0.1, -0.05, 0, 0.05, 0.1))
+mu.psi.yr <- data.frame(mu.psi.yr = c(-0.1, -0.05, 0, 0.05, 0.1))
 nyr <- data.frame(nyr = c(10))
 prop.visits.same <- data.frame(prop.visits.same = c(0,0.5, 1))
 
@@ -91,6 +91,5 @@ run_all_simulation_1 <- function(s, all_scenarios){
 
 lapply(1:nrow(all_scenarios), run_all_simulation_1, all_scenarios = 
          all_scenarios)
-
 
 

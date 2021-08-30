@@ -5,13 +5,13 @@ library(purrr)
 library(dplyr)
 library(data.table)
 
-file_sim <- list.files("p2.2/outputs/model.res/")
+file_sim <- list.files("~/scratch/occ_historical/multi_sp/p2.2/outputs/model.res/")
 
 compiled_res <- list()
 
 for(i in 1:length(file_sim)){
   
-  load(paste0("p2.2/outputs/model.res/",file_sim[i]), verbose = TRUE)
+  load(paste0("~/scratch/occ_historical/multi_sp/p2.2/outputs/model.res/",file_sim[i]), verbose = TRUE)
   
   file_params <- unlist(str_split(file_sim[i], "_"))
   

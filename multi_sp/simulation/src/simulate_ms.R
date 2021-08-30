@@ -298,7 +298,7 @@ make.data <- function(## data structure set up
   for(yr in 1:nyr){
     for(sp in 1:nsp){
         
-      Z[sp, which(sp.range[sp,]) ,yr] <- rbinom(n = sum(sp.range[sp,]), size = 1, prob = psi.mat[which(sp.range[sp,])])
+      Z[sp, which(sp.range[sp,]) ,yr] <- rbinom(n = sum(sp.range[sp,]), size = 1, prob = psi.mat[sp,which(sp.range[sp,]),yr])
       
     }
   }

@@ -41,16 +41,16 @@ base_scenario <- data.frame(nsp          = 50,
                              type.range = "all",
                              type.visit = 'visit_miss')
 
-r <- data.frame(r = 1:5)
+r <- data.frame(r = 1:2)
 p.yr <- data.frame(p.yr = c(-1, -0.5, 0, 0.5, 1))
 mu.phi.yr <- data.frame(mu.phi.yr = c(-1, -0.5, 0, 0.5, 1))
 mu.gam.yr <- data.frame(mu.gam.yr = c(-1, -0.5, 0, 0.5, 1))
-nyr <- data.frame(nyr = c(5,10))
-prop.visits.same <- data.frame(prop.visits.same = c(0,0.25, 0.5, 0.75, 1))
+nyr <- data.frame(nyr = c(10))
+prop.visits.same <- data.frame(prop.visits.same = c(0,0.5,  1))
 
 all_scenarios <- bind_rows(expand.grid.df(base_scenario, p.yr, data.frame(mu.phi.yr = 0, mu.gam.yr = 0), r, nyr, prop.visits.same),
                            expand.grid.df(base_scenario, mu.phi.yr, data.frame(p.yr= 0, mu.gam.yr = 0), r, nyr, prop.visits.same),
-                           expand.grid.df(base_scenario, mu.gam.yr, data.frame(mu.phi.yr = 0,  p.yr = 0), r, nyr, prop.visits.same))
+                           expand.grid.df(base_scenario, mu.gam.yr, data.frame(mu.phi.yr = 0,  p.yr = 0), r, nyr, prop.visits.same)) %>% unique()
 
 
 run_all_simulation_1 <-function(s, all_scenarios){
@@ -91,6 +91,7 @@ run_all_simulation_1 <-function(s, all_scenarios){
                    "_mu.gam.yr_",all_scenarios[s,'mu.gam.yr'], "_nyr_",all_scenarios[s,'nyr'],
                    "_prop.visits.same_",all_scenarios[s,'prop.visits.same'],
                    "_range_", all_scenarios[s,'type.range'], "_visit_", all_scenarios[s,'type.visit'],
+                   "_s_", s,
                    ".RData"))
 
     
@@ -99,11 +100,5 @@ run_all_simulation_1 <-function(s, all_scenarios){
 
 lapply(1:nrow(all_scenarios), run_all_simulation_1, all_scenarios = 
          all_scenarios)
-
-all_scenarios
-
-which(all_scenarios$r==3 & all_scenarios$p.yr ==1 &
-        all_scenarios$mu.phi.yr == 0& all_scenarios$mu.gam.yr ==0, 
-      all_scenarios$nyr ==5& all_scenarios$prop.visits.same ==0)
 
 

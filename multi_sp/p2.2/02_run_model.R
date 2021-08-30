@@ -12,18 +12,27 @@ file_sim <- list.files("~/scratch/occ_historical/multi_sp/p2.2/outputs/sim.data/
 run_prep_model <- function(file, case, range, model){
   
   load(paste0("~/scratch/occ_historical/multi_sp/p2.2/outputs/sim.data/", file), verbose = TRUE)
-  
+  #load(paste0("multi_sp/p2.2/outputs/sim.data/", file), verbose = TRUE)
   ## source model
   source(sprintf('~/scratch/occ_historical/multi_sp/simulation/models/%s.R', model))
+  #source(sprintf('multi_sp/simulation/models/%s.R', model))
+  
 
   data.prepped <- prep.data(limit.to.visits = case, limit.to.range=range, sim.data)
   
   ## set model parameters 
   
-  n.iter=1e4
-  n.burnin=1e2
-  n.adapt=1e2
-  n.thin=3e1
+  # n.iter=1e4
+  # n.burnin=1e2
+  # n.adapt=1e2
+  # n.thin=3e1
+  # n.chains=3
+  
+  
+  n.iter=1e2
+  n.burnin=1e1
+  n.adapt=1e1
+  n.thin=0
   n.chains=3
   
   ## Initial values 

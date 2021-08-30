@@ -5,16 +5,16 @@ args <-
 
 library(parallel)
 library(stringr)
-source('dynamic/simulation/src/prep_data.R')
+source('~/scratch/occ_historical/dynamic/simulation/src/prep_data.R')
 
-file_sim <- list.files("dynamic/p2.2/outputs/sim.data/")
+file_sim <- list.files("~/scratch/occ_historical/dynamic/p2.2/outputs/sim.data/")
 
 run_prep_model <- function(file, case, model){
   
-  load(paste0("dynamic/p2.2/outputs/sim.data/", file), verbose = TRUE)
+  load(paste0("~/scratch/occ_historical/dynamic/p2.2/outputs/sim.data/", file), verbose = TRUE)
   
   ## source model
-  source(sprintf('dynamic/simulation/models/%s.R', model))
+  source(sprintf('~/scratch/occ_historical/dynamic/simulation/models/%s.R', model))
 
   data.prepped <- prep.data(limit.to.visits = case, sim.data)
   
@@ -87,14 +87,14 @@ run_prep_model <- function(file, case, model){
   
   #### fix file name saving 
   save(res, data.prepped, sim.data,
-       file=paste0("dynamic/p2.2/outputs/model.res/", case, file))
+       file=paste0("~/scratch/occ_historical/dynamic/p2.2/outputs/model.res/", case, file))
 }
 
 run_id <-
   as.numeric(args)
 print(run_id)
 
-run_all <- function(run_id){
+
   run_prep_model(file_sim[run_id], case = 'all', model = 'dynamic-nimble')
   
   run_prep_model(file_sim[run_id], case = 'detected', model = 'dynamic-nimble')
@@ -102,7 +102,5 @@ run_all <- function(run_id){
   run_prep_model(file_sim[run_id], case = 'visits', model = 'dynamic-nimble')
   
   run_prep_model(file_sim[run_id], case = 'community', model = 'dynamic-nimble')
-}
 
-mclapply(42:length(file_sim), run_all, mc.cores = 4)
 
