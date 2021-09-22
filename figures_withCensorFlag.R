@@ -30,20 +30,22 @@ main_plot <- function(case, censor, load_tf, intervals,...){
   
   ## varying detection ##
   
-  p_p.yr <- output_p_s[mu.psi.yr == 0 & term == 'p.yr'] %>% 
+  p_p.yr <- output_p_s[mu.psi.yr == 0 & term == 'p.yr' & nyr==10 & !grepl("community", visit_mod) &
+                         visit_sim == 0] %>% 
     ggplot() +
-    geom_point(aes(x = p.yr, y = estimate, group = r), position = position_dodge(width = 0.2)) +
-    geom_linerange(aes(x = p.yr, ymin = lower, ymax = upper, group = r), position = position_dodge(width = 0.2)) +
+    geom_point(aes(x = p.yr, y = estimate, group = r, color=prop.visits.same), position = position_dodge(width = 0.02)) +
+    geom_linerange(aes(x = p.yr, ymin = lower, ymax = upper, group = r, color=prop.visits.same), position = position_dodge(width = 0.02)) +
     theme_cowplot() +
     facet_wrap(~visit_mod) +
     geom_abline(intercept = 0, slope = 1, colour = 'grey', linetype = 'dashed') +
     theme(strip.background = element_blank()) +
     ylab('Estimated p.yr') + xlab('p.yr')
   
-  p_mu.psi.yr <- output_p_s[mu.psi.yr == 0 & term == 'mu.psi.yr'] %>% 
+  p_mu.psi.yr <- output_p_s[mu.psi.yr == 0 & term == 'mu.psi.yr' & nyr==10 & !grepl("community", visit_mod) &
+                              visit_sim == 0] %>% 
     ggplot() +
-    geom_point(aes(x = p.yr, y = estimate, group = r), position = position_dodge(width = 0.2)) +
-    geom_linerange(aes(x = p.yr, ymin = lower, ymax = upper, group = r), position = position_dodge(width = 0.2)) +
+    geom_point(aes(x = p.yr, y = estimate, group = r, color=prop.visits.same), position = position_dodge(width = 0.02)) +
+    geom_linerange(aes(x = p.yr, ymin = lower, ymax = upper, group = r, color=prop.visits.same), position = position_dodge(width = 0.02)) +
     theme_cowplot() +
     facet_wrap(~visit_mod) +
     geom_hline(yintercept = 0,  colour = 'grey', linetype = 'dashed') +
@@ -59,20 +61,22 @@ main_plot <- function(case, censor, load_tf, intervals,...){
   
   ## varying persistence ##
   
-  p_p.yr_2 <- output_p_s[p.yr == 0 & term == 'p.yr'] %>% 
+  p_p.yr_2 <- output_p_s[p.yr == 0 & term == 'p.yr' & nyr==10  & !grepl("community", visit_mod) &
+                           visit_sim == -0.5] %>% 
     ggplot() +
-    geom_point(aes(x = mu.psi.yr, y = estimate, group = r), position = position_dodge(width = 0.2)) +
-    geom_linerange(aes(x = mu.psi.yr, ymin = lower, ymax = upper, group = r), position = position_dodge(width = 0.2)) +
+    geom_point(aes(x = mu.psi.yr, y = estimate, group = r, color=prop.visits.same), position = position_dodge(width = 0.02)) +
+    geom_linerange(aes(x = mu.psi.yr, ymin = lower, ymax = upper, group = r, color=prop.visits.same), position = position_dodge(width = 0.02)) +
     theme_cowplot() +
     facet_wrap(~visit_mod) +
     geom_hline(yintercept = 0,  colour = 'grey', linetype = 'dashed') +
     theme(strip.background = element_blank()) +
     ylab('Estimated p.yr') + xlab('mu.psi.yr')
   
-  p_mu.psi.yr_2 <- output_p_s[p.yr == 0 & term == 'mu.psi.yr'] %>% 
+  p_mu.psi.yr_2 <- output_p_s[p.yr == 0 & term == 'mu.psi.yr' & nyr==10   & !grepl("community", visit_mod) &
+                                visit_sim == -0.5] %>% 
     ggplot() +
-    geom_point(aes(x = mu.psi.yr, y = estimate, group = r), position = position_dodge(width = 0.2)) +
-    geom_linerange(aes(x = mu.psi.yr, ymin = lower, ymax = upper, group = r), position = position_dodge(width = 0.2)) +
+    geom_point(aes(x = mu.psi.yr, y = estimate, group = r, color=prop.visits.same), position = position_dodge(width = 0.02)) +
+    geom_linerange(aes(x = mu.psi.yr, ymin = lower, ymax = upper, group = r, color=prop.visits.same), position = position_dodge(width = 0.02)) +
     theme_cowplot() +
     facet_wrap(~visit_mod) +
     geom_abline(intercept = 0, slope = 1, colour = 'grey', linetype = 'dashed') +
