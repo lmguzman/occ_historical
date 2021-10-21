@@ -27,8 +27,8 @@ for(i in 1:length(file_sim)){
   true_value <- map_df(sim.data[summary_mcmc$term], ~data.frame(true_val = .x), .id = 'term')
   
   compiled_res[[i]] <- full_join(full_join(summary_mcmc, rhat_mcmc), true_value) %>% 
-    mutate(range_sim = file_params[15], range_mod = NA, visit_sim = file_params[18], visit_mod = file_params[1], 
-           r = file_params[3], nyr = file_params[11], prop.visits.same = file_params[13], s = i) %>% 
+    mutate(range_sim = file_params[13], range_mod = NA, visit_sim = file_params[18], visit_mod = file_params[1], 
+           r = file_params[3], nyr = file_params[9], prop.visits.same = file_params[11], s = i) %>% 
     data.table()
   
 }
