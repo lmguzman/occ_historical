@@ -33,19 +33,20 @@ base_scenario <- data.frame(nsp          = 50,
                              sigma.psi.yr = 0.2,
                              ## visit
                              mu.v.0 = 0, 
-                             mu.v.yr = -0.1,
                              ## type sym
                              type.range = 'all',
-                             type.visit = 'visit_miss')
+                             type.visit = 'visit_miss', 
+                             p.yr = 0, 
+                            mu.psi.yr = 0)
 
-r <- data.frame(r = c(1,2))
-p.yr <- data.frame(p.yr = c(-0.1, -0.05, 0, 0.05, 0.1))
-mu.psi.yr <- data.frame(mu.psi.yr = c(-0.1, -0.05, 0, 0.05, 0.1))
-nyr <- data.frame(nyr = c(10))
-prop.visits.same <- data.frame(prop.visits.same = c(0,0.5, 1))
+r <- data.frame(r = 1:5)
+#p.yr <- data.frame(p.yr = c(-0.1, -0.05, 0, 0.05, 0.1))
+#mu.psi.yr <- data.frame(mu.psi.yr = c(-0.1, -0.05, 0, 0.05, 0.1))
+nyr <- data.frame(nyr = c(2, 5, 10))
+prop.visits.same <- data.frame(prop.visits.same = c(0,0.25,0.5, 0.75, 1))
+mu.v.yr <- data.frame(mu.v.yr = c(-0.1,0,0.1))
 
-all_scenarios <- bind_rows(expand.grid.df(base_scenario, p.yr, data.frame(mu.psi.yr = 0), r, nyr, prop.visits.same),
-                           expand.grid.df(base_scenario, mu.psi.yr, data.frame(p.yr = 0), r, nyr, prop.visits.same)) %>% 
+all_scenarios <- bind_rows(expand.grid.df(base_scenario, r, nyr, prop.visits.same, mu.v.yr)) %>% 
   unique()
 
 
@@ -81,6 +82,7 @@ run_all_simulation_1 <- function(s, all_scenarios){
                    "_r_",all_scenarios[s,'r'],"_p.yr_",all_scenarios[s,'p.yr'],
                    "_mu.psi.yr_",all_scenarios[s,'mu.psi.yr'], "_nyr_",all_scenarios[s,'nyr'],
                    "_prop.visits.same_",all_scenarios[s,'prop.visits.same'],
+                   "_mu.v.yr_",all_scenarios[s,'mu.v.yr'],
                    "_range_", all_scenarios[s,'type.range'], "_visit_", all_scenarios[s,'type.visit'],
                    "_s_", s,
                    ".RData"))

@@ -22,17 +22,10 @@ run_prep_model <- function(file, case, range, model){
   
   ## set model parameters 
   
-  # n.iter=1e4
-  # n.burnin=1e2
-  # n.adapt=1e2
-  # n.thin=3e1
-  # n.chains=3
-  
-  
-  n.iter=1e2
-  n.burnin=1e1
-  n.adapt=1e1
-  n.thin=0
+  n.iter=1e4
+  n.burnin=1e2
+  n.adapt=1e2
+  n.thin=3e1
   n.chains=3
   
   ## Initial values 
@@ -50,7 +43,8 @@ run_prep_model <- function(file, case, range, model){
                 psi.sp = rep(0,sim.data$nsp),
                 mu.psi.yr = 0,
                 sigma.psi.yr = 0.1,
-                psi.yr = rep(0,sim.data$nsp))
+                psi.yr = rep(0,sim.data$nsp),
+                mu.p = rep(0, data.prepped$my.constants$nind))
   
   ### nimble model 
   
@@ -97,6 +91,5 @@ print(run_id)
   
   run_prep_model(file_sim[run_id], case = 'visits', range="no", model = 'ms-nimble')
   
-  run_prep_model(file_sim[run_id], case = 'community', range="no", model = 'ms-nimble')
 
 

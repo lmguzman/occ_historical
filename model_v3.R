@@ -117,18 +117,18 @@ make.fig <- function(file.name) {
     
 
     mtext(expression('Range of'),
-          side=1, line=-8.25, at=-0.17, cex=0.5, adj=0, outer=TRUE)
+          side=1, line=-8.25, at=-0.09, cex=0.5, adj=0, outer=TRUE)
     mtext(expression('species'~italic(i)~','~italic(R[i])),
-          side=1, line=-7.25, at=-0.17, cex=0.5, adj=0, outer=TRUE)
+          side=1, line=-7.25, at=-0.09, cex=0.5, adj=0, outer=TRUE)
     
     mtext(expression('Site 1'),
-          side=1, line=-18.2, at=-0.03, cex=0.5, adj=0, outer=TRUE)
+          side=1, line=-18.2, at=0.01, cex=0.5, adj=0, outer=TRUE)
     mtext(expression('Site 2'),
-          side=1, line=-17.2, at=-0.03, cex=0.5, adj=0, outer=TRUE)
+          side=1, line=-17.2, at=0.01, cex=0.5, adj=0, outer=TRUE)
     mtext(expression('...'),
-          side=1, line=-16.2, at=-0.03, cex=0.5, adj=0, outer=TRUE)
+          side=1, line=-16.2, at=0.01, cex=0.5, adj=0, outer=TRUE)
     mtext(expression('Site 20'),
-          side=1, line=-1.2, at=-0.04, cex=0.5, adj=0, outer=TRUE)
+          side=1, line=-1.2, at=0.0, cex=0.5, adj=0, outer=TRUE)
 
     v1 <- 0.07
     v3 <- 0.18
@@ -142,7 +142,7 @@ make.fig <- function(file.name) {
     mtext(expression('Interval'),
           side=1, line=0.8, at=0.1, cex=0.5, adj=0, outer=TRUE)
 
-    shift <- 0.17
+    shift <- 0.16
     mtext(expression('1'),
           side=1, line=-0.1, at=v1+shift, cex=0.5, adj=0, outer=TRUE)
     mtext(expression('2'),
@@ -152,7 +152,7 @@ make.fig <- function(file.name) {
     mtext(expression('Interval'),
           side=1, line=0.8, at=0.1+shift, cex=0.5, adj=0, outer=TRUE)
     
-    shift <- 0.34
+    shift <- 0.325
     mtext(expression('1'),
           side=1, line=-0.1, at=v1+shift, cex=0.5, adj=0, outer=TRUE)
     mtext(expression('2'),
@@ -162,7 +162,7 @@ make.fig <- function(file.name) {
     mtext(expression('Interval'),
           side=1, line=0.8, at=0.1+shift, cex=0.5, adj=0, outer=TRUE)
     
-    shift <- 0.51
+    shift <- 0.52
     mtext(expression('1'),
           side=1, line=-0.1, at=v1+shift, cex=0.5, adj=0, outer=TRUE)
     mtext(expression('2'),
@@ -183,7 +183,7 @@ make.fig <- function(file.name) {
     
   }
   
-  pdf.f(g, file = file.name, height=2.75, width=4.5)
+  pdf.f(g, file = file.name, height=2.75, width=6)
 }
 
 make.fig('figures/model_v4.pdf')

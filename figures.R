@@ -142,21 +142,8 @@ main_plot <- function(case, load_tf, intervals,...){
 
 
 
-multi_plot <- function(case, load_tf, intervals,...){
+multi_plot <- function(case, output_p_s){
   
-  if(load_tf == TRUE){
-    output_p <- readRDS(paste0("multi_sp",case,"/outputs/model.summary/all_outputs.rds"))
-    
-    output_p$nyr <- factor(output_p$nyr, levels = c('2', '5', '10'))
-    
-    output_p$sim <- rep(1:(nrow(output_p)/11), each = 11)
-    
-    scenarios <- output_p[term %in% c('p.yr', 'mu.psi.yr'), .(term, true_val, sim)] %>% 
-      pivot_wider(names_from = 'term', values_from = 'true_val') 
-    
-    output_p_s <- output_p %>% 
-      left_join(scenarios)
-  }
   
   ## varying detection ##
   
@@ -319,6 +306,74 @@ multi_plot_intercept <- function(case, output_p_s){
   
 }
 
+
+
+
+
+
+multi_plot_prop <- function(case, output_p_s){
+  
+  ## varying detection ##
+  
+  p_p.yr <- output_p_s[mu.psi.yr == 0 & term == 'p.yr'] %>% 
+    ggplot() +
+    geom_point(aes(x = p.yr, y = estimate, group = r, colour = prop.visits.same), position = position_dodge(width = 0.02)) +
+    geom_linerange(aes(x = p.yr, ymin = lower, ymax = upper,  group = r, colour = prop.visits.same), position = position_dodge(width = 0.02)) +
+    theme_cowplot() +
+    facet_wrap(~visit_mod, nrow = 1) +
+    geom_abline(intercept = 0, slope = 1, colour = 'grey', linetype = 'dashed') +
+    theme(strip.background = element_blank()) +
+    ylab('Estimated p.yr') + xlab('p.yr')+ 
+    scale_y_continuous(limits = c(-0.85,0.85))
+  
+  p_mu.psi.yr <- output_p_s[mu.psi.yr == 0  & term == 'mu.psi.yr'] %>% 
+    ggplot() +
+    geom_point(aes(x = p.yr, y = estimate,  group = r, colour = prop.visits.same), position = position_dodge(width = 0.02)) +
+    geom_linerange(aes(x = p.yr, ymin = lower, ymax = upper, group = r, colour = prop.visits.same), position = position_dodge(width = 0.02)) +
+    theme_cowplot() +
+    facet_wrap(~visit_mod, nrow = 1) +
+    geom_hline(yintercept = 0,  colour = 'grey', linetype = 'dashed') +
+    theme(strip.background = element_blank()) +
+    ylab('Estimated mu.psi.yr') + xlab('p.yr')+ 
+    scale_y_continuous(limits = c(-0.75,0.75))
+  
+  p_v_p <- plot_grid(p_p.yr, p_mu.psi.yr, ncol = 1)
+  
+ # ggsave(p_v_p, filename = paste0("figures/multi_sp_prop_all_",case,"_v_p.jpeg"), height = 10, width = 13)
+  ggsave(p_v_p, filename = paste0("figures/multi_sp_prop_all_",case,"_v_p.jpeg"))
+  
+  
+  ## varying occupancy ##
+  
+  p_p.yr_2 <- output_p_s[p.yr == 0 & term == 'p.yr'] %>%
+    ggplot() +
+    geom_point(aes(x = mu.psi.yr, y = estimate,  group = r, colour = prop.visits.same), position = position_dodge(width = 0.02)) +
+    geom_linerange(aes(x = mu.psi.yr, ymin = lower, ymax = upper,  group = r, colour = prop.visits.same), position = position_dodge(width = 0.02)) +
+    theme_cowplot() +
+    facet_wrap(~visit_mod, nrow = 1) +
+    geom_hline(yintercept = 0,  colour = 'grey', linetype = 'dashed') +
+    theme(strip.background = element_blank()) +
+    ylab('Estimated p.yr') + xlab('mu.psi.yr')+ 
+    scale_y_continuous(limits = c(-0.5,0.5))
+  
+  p_mu.psi.yr_2 <- output_p_s[p.yr == 0 & term == 'mu.psi.yr'] %>% 
+    ggplot() +
+    geom_point(aes(x = mu.psi.yr, y = estimate, colour = prop.visits.same, group = r), position = position_dodge(width = 0.02)) +
+    geom_linerange(aes(x = mu.psi.yr, ymin = lower, ymax = upper,  group = r, colour = prop.visits.same), position = position_dodge(width = 0.02)) +
+    theme_cowplot() +
+    facet_wrap(~visit_mod, nrow = 1) +
+    geom_abline(intercept = 0, slope = 1, colour = 'grey', linetype = 'dashed') +
+    theme(strip.background = element_blank()) +
+    ylab('Estimated mu.psi.yr') + xlab('mu.psi.yr') + 
+    scale_y_continuous(limits = c(-0.8,0.8))
+  
+  p_v_mu.psi.yr <- plot_grid( p_p.yr_2, p_mu.psi.yr_2, ncol = 1)
+  
+  #ggsave(p_v_mu.psi.yr, filename = paste0("figures/multi_sp_prop_all_",case,"_v_mu.psi.yr.jpeg"), height = 10, width = 13)
+  ggsave(p_v_mu.psi.yr, filename = paste0("figures/multi_sp_prop_all_",case,"_v_mu.psi.yr.jpeg"))
+  
+  
+}
 ######## p1 ########
 # All species are everywhere, no ranges
 # visits the same for all species
@@ -424,15 +479,15 @@ summarised_rmse %>%
 
 output_p.v.same.0 <- output_all[prop.visits.same == 0]
 
-multi_plot(case = '2.2_p.v.same.0', load_tf = FALSE, output_p_s = output_p.v.same.0)
+multi_plot(case = '2.2_p.v.same.0', output_p_s = output_p.v.same.0)
 
 output_p.v.same.1 <- output_all[prop.visits.same == 1]
 
-multi_plot(case = '2.2_p.v.same.1', load_tf = FALSE, output_p_s = output_p.v.same.1)
+multi_plot(case = '2.2_p.v.same.1',  output_p_s = output_p.v.same.1)
 
 output_p.v.same.0.5 <- output_all[prop.visits.same == 0.5]
 
-multi_plot(case = '2.2_p.v.same.0.5', load_tf = FALSE, output_p_s = output_p.v.same.0.5)
+multi_plot(case = '2.2_p.v.same.0.5',  output_p_s = output_p.v.same.0.5)
 
 
 
@@ -451,4 +506,11 @@ multi_plot_intercept(case = '2.2_p.v.same.1', output_p_s = output_p.v.same.1)
 output_p.v.same.0.5 <- output_all[prop.visits.same == 0.5 & visit_mod != "communityno"]
 
 multi_plot_intercept(case = '2.2_p.v.same.0.5', output_p_s = output_p.v.same.0.5)
+
+
+### all props together
+
+output_no_com <- output_all[!(visit_mod %in% c("communityno", "allno"))]
+
+multi_plot_prop(case = '2.2_all_prop', output_p_s = output_no_com)
 
