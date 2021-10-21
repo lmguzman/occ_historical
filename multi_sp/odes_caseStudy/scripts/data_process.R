@@ -6,7 +6,8 @@
 # load libraries
 library(tidyverse); library(taxotools); library(data.table)
 library(sf); library(cowplot); library(maps); library(mapdata)
-library(ggpubr); library(nimble); library(raster)
+library(ggpubr); library(nimble); library(raster); library(lubridate)
+library(reclin); library(sp); library(rgdal); library(geosphere)
 
 # source prewritten functions from the simulation studies
 source('prep_data_real.R')
@@ -22,20 +23,90 @@ gbif_dat <- fread("../data/gbif.csv",
 
 occ_dat <- gbif_dat
 
-# filter the occurrence data to a sensible time frame (1910s-2010s)
+# filter the occurrence data to a sensible time frame (1970s-2010s)
+sp_list <- as.data.frame(table(occ_dat$species)) %>%
+  dplyr::filter(Freq >= 100)
+
 occ_dat <- occ_dat %>%
-  filter(between(year, 1910, 2019), !is.na(species), species!="") %>%
+  filter(between(year, 1970, 2019), !is.na(species), species!="", species %in% sp_list$Var1) %>%
   dplyr::select(species, year, decimalLatitude, decimalLongitude)
 head(occ_dat)
 plot(occ_dat$decimalLongitude, occ_dat$decimalLatitude)
+
+
+# approximate the number of "community visits" using event dates, collectors, and locations
+comm_coll <- gbif_dat %>%
+  dplyr::select(species, eventDate, recordedBy, decimalLatitude, decimalLongitude )%>% 
+  distinct() %>% 
+  filter(!is.na(eventDate), !is.na(decimalLatitude), !is.na(decimalLongitude)) %>% 
+  filter(!is.na(recordedBy)) %>%
+  mutate(date_clean = ymd(eventDate)) %>% 
+  filter(date_clean > ymd("1970-01-01")) %>% 
+  data.table()
+
+comm_coll$recordedBy %>% table() %>% sort(decreasing = TRUE) %>% head()
+
+# Cluster observations by same day within 1km square areas
+comm_coll <- gbif_dat %>%
+  dplyr::select(species, eventDate, recordedBy, decimalLatitude, decimalLongitude )%>% 
+  distinct() %>% 
+  filter(!is.na(eventDate), !is.na(decimalLatitude), !is.na(decimalLongitude)) %>% 
+  filter(!is.na(recordedBy)) %>%
+  mutate(date_clean = ymd(eventDate)) %>% 
+  filter(date_clean > ymd("1970-01-01")) %>% 
+  data.table()
+
+n_obs_day <- table(comm_coll$date_clean)
+single_obs_dates <- names(n_obs_day[n_obs_day == 1])
+unique_dates <- names(n_obs_day[n_obs_day > 1])
+
+cluster_lists <- list()
+sin_obs_data <- comm_coll[date_clean %in% ymd(single_obs_dates)]
+sin_obs_data[, "cluster" := paste0(date_clean, "-", 1)]
+cluster_lists[[1]] <- sin_obs_data
+counter <- 2
+
+for(date_use in unique_dates){
+  
+  cur_date <- comm_coll[date_clean == date_use]
+  
+  lat_lon <- cur_date[,.(decimalLongitude, decimalLatitude)]
+  
+  xy <- SpatialPointsDataFrame(
+    lat_lon, data.frame(ID=seq(1:nrow(lat_lon))),
+    proj4string=CRS("+proj=longlat +ellps=WGS84 +datum=WGS84"))
+  
+  # use the distm function to generate a geodesic distance matrix in meters
+  mdist <- distm(xy)
+  
+  # cluster all points using a hierarchical clustering approach
+  hc <- hclust(as.dist(mdist), method="complete")
+  
+  # define the distance threshold
+  d=1000
+  
+  cur_date[, "cluster" := paste0(date_clean, "-", cutree(hc, h=d))]
+  
+  cluster_lists[[counter]] <- cur_date
+  
+  counter <- counter+1
+}
+
+all_clusters <- rbindlist(cluster_lists)
+
+size_clusters <- table(all_clusters$cluster) %>% table()
+
+# percentage of single samplings
+size_clusters[1]/nrow(all_clusters)
+
+###############################################################################
 
 # convert the occurrence data to a spatial object
 occ_spat <- st_as_sf(occ_dat, 
                      coords=c("decimalLongitude", "decimalLatitude"))
 head(occ_spat)
 
-# create a grid of 1-degree cells across the study landscape, clip to land
-grid_1 <- st_make_grid(extent(occ_spat), cellsize=1) %>%
+grid_1 <- st_make_grid(extent(occ_spat), cellsize=2) %>%
   st_as_sf() %>%
   dplyr::mutate(GID=row_number())
 
@@ -75,7 +146,7 @@ grid_int <- list()
 for(i in 1:length(range)){
   grid_int[[i]] <- matrix(as.matrix(st_intersects(grid_1, range[[i]])), nrow=24, ncol=26) 
 }
-res <- array(unlist(grid_int), dim=c(length(sp_list), nrow(grid_1)))
+res <- array(unlist(grid_int), dim=c(length(unique(occ_dat$species)), nrow(grid_1)))
 
 # assign occurrences to the grid, create era codes for each
 # occurrence, then take only unique era/visit/grid/species occurrences
@@ -87,12 +158,20 @@ dplyr::mutate(SPID=row_number())
 
 occ_grid <- occ_spat %>%
   st_intersection(grid_1) %>%
-  dplyr::mutate(era=year-year%%10) %>%
-  dplyr::mutate(year=year-era) %>%
-  dplyr::mutate(era=(era-1900)/10) %>%
+  dplyr::mutate(era=(year-year%%10)) %>%
+  dplyr::mutate(year=(year-era)+1) %>%
+  dplyr::mutate(era=(era-1960)/10) %>%
   left_join(sp_list) %>%
   dplyr::select(SPID, era, year, GID) %>%
   unique()
+head(occ_grid)
+
+occ_grid <- occ_grid %>%
+  dplyr::mutate(year=case_when(year %in% c(1,2) ~ 1,
+                               year %in% c(3,4) ~ 2,
+                               year %in% c(5,6) ~ 3,
+                               year %in% c(7,8) ~ 4,
+                               year %in% c(9,10) ~ 5))
 head(occ_grid)
 
 ggplot()+
@@ -105,8 +184,8 @@ ggplot()+
 # create the master matrix of occurrences
 X <- array(NA, dim=c(nsp=nrow(sp_list),
                nsite=nrow(grid_1),
-               nyr=11,
-               nvisit=10))
+               nyr=5,
+               nvisit=5))
 
 for(i in 1:nrow(occ_grid)){
   X[occ_grid$SPID[i],
@@ -115,11 +194,11 @@ for(i in 1:nrow(occ_grid)){
             occ_grid$year[i]] <- 1
 }
 Z <- apply(X, c(1,2,3), sum)
-dd <- list(Z=Z, X=X, nsite=nrow(grid_1), nsp=nrow(sp_list), nyr=11, nvisit=10,
+dd <- list(Z=Z, X=X, nsite=nrow(grid_1), nsp=nrow(sp_list), nyr=5, nvisit=5,
            vis.arr=array(1, dim=c(nsp=nrow(sp_list),
                                   nsite=nrow(grid_1),
-                                  nyr=11,
-                                  nvisit=10)),
+                                  nyr=5,
+                                  nvisit=5)),
            sp.range=res)
 
 # all_all modeling case
@@ -136,6 +215,16 @@ dd_det_all_prep <- prep.data(dd_det_all, limit.to.visits="detected",
 dd_det_range <- dd
 dd_det_range_prep <- prep.data(dd_det_range, limit.to.visits="detected", 
                                limit.to.range="yes")
+
+visits <- data.frame(yr=dd_det_range_prep$my.constants$yrv,
+                     site=dd_det_range_prep$my.constants$sitev)
+visits_ind <- visits %>% group_by(yr, site) %>%
+  dplyr::mutate(n=n())
+
+ggplot()+
+  geom_line(visits_ind, mapping=aes(x=yr, y=n, group=site, color=site))+
+  scale_color_viridis_c()+
+  theme_cowplot()
 
 # model code
 ms_nimble <- nimbleCode({
@@ -233,6 +322,8 @@ ms_nimble <- nimbleCode({
 })
 params <- c('mu.p.0',
             'p.yr',
+            "psi",
+            "psi.yr",
             'sigma.p.sp',
             'sigma.p.site',
             'mu.psi.0',

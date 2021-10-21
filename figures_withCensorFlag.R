@@ -1,5 +1,6 @@
 library(data.table)
 library(ggplot2)
+library(ggpubr)
 library(cowplot)
 library(tidyr)
 library(Metrics)
@@ -7,151 +8,127 @@ library(dplyr)
 
 
 ### main plot code ##
-
 main_plot <- function(case, censor, load_tf, intervals,...){
   
   if(load_tf == TRUE){
-    output_p <- readRDS(paste0(case,"/outputs/model.summary/", censor, ".rds"))
-    
-    print("File loading successful...")
-    
-    output_p$nyr <- factor(output_p$nyr, levels = c('2', '5', '10'))
-    
-    output_p$sim <- rep(1:(nrow(output_p)/8), each = 8)
-    
-    scenarios <- output_p[term %in% c('p.yr', 'mu.psi.yr'), .(term, true_val, sim)] %>% 
+    output_p <- readRDS(paste0(case,"/outputs/model.summary/", visit_type, "/", 
+                               "all_censored_outputs", ".rds"))
+    print("Main file loading successful...")
+
+    output_p1 <- dplyr::filter(output_p, visit_sim==-0.1)  
+    output_p1$nyr <- factor(output_p1$nyr, levels = c('2', '5', '10'))
+    output_p1$sim <- rep(1:(nrow(output_p1)/8), each = 8)
+    scenarios1 <- output_p1[term %in% c('p.yr', 'mu.psi.yr'), .(term, true_val, sim)] %>% 
       pivot_wider(names_from = 'term', values_from = 'true_val') 
+    output_p_s1 <- output_p1 %>% 
+      left_join(scenarios1)
+    print("First file parsed...")
     
-    output_p_s <- output_p %>% 
-      left_join(scenarios)
+    output_p2 <- dplyr::filter(output_p, visit_sim==0)  
+    output_p2$nyr <- factor(output_p2$nyr, levels = c('2', '5', '10'))
+    output_p2$sim <- rep(1:(nrow(output_p2)/8), each = 8)
+    scenarios2 <- output_p2[term %in% c('p.yr', 'mu.psi.yr'), .(term, true_val, sim)] %>% 
+      pivot_wider(names_from = 'term', values_from = 'true_val') 
+    output_p_s2 <- output_p2 %>% 
+      left_join(scenarios2)
+    print("First file parsed...")
     
-    print("Imported file successfully indexed...")
+    output_p3 <- dplyr::filter(output_p, visit_sim==0.1)  
+    output_p3$nyr <- factor(output_p3$nyr, levels = c('2', '5', '10'))
+    output_p3$sim <- rep(1:(nrow(output_p3)/8), each = 8)
+    scenarios3 <- output_p3[term %in% c('p.yr', 'mu.psi.yr'), .(term, true_val, sim)] %>% 
+      pivot_wider(names_from = 'term', values_from = 'true_val') 
+    output_p_s3 <- output_p3 %>% 
+      left_join(scenarios3)
+    print("First file parsed...")
+    
   }
   
-  ## varying detection ##
+  ## RMSE Values ##
+  summarised_rmse <- output_p_s1[,.(rmse_vals = rmse(true_val, estimate), N = .N), 
+                                by = .(visit_mod, term, nyr, prop.visits.same)] %>%
+    dplyr::mutate(nyr=paste(nyr, "eras"),
+                  visit_mod=case_when(visit_mod=="allyes" ~ "All",
+                                      visit_mod=="detectedyes" ~ "Detected",
+                                      visit_mod=="visitsyes" ~ "True Visits"))
+  summarised_rmse$nyr <- factor(summarised_rmse$nyr, levels=c("2 eras",
+                                                              "5 eras",
+                                                              "10 eras"))
+  summarised_rmse$visit_mod <- factor(summarised_rmse$visit_mod, 
+                                      levels=c("All",
+                                               "Detected",
+                                               "True Visits"))
+  p1 <- summarised_rmse %>% 
+    filter(term %in% c('mu.psi.yr', 'p.yr'), !is.na(visit_mod)) %>% 
+    ggplot(aes(x = prop.visits.same, y = rmse_vals, colour =  visit_mod, 
+               group = visit_mod)) + 
+    geom_point(alpha=0.9) +
+    geom_line(alpha=0.9) +
+    scale_color_viridis_d(end=0.8, name="Type of Modelling Approach")+
+    geom_hline(yintercept=0, linetype=2)+
+    xlab("Proportion of Community Visits")+
+    ylab("RMSE")+
+    facet_grid(nyr~term) +
+    theme_cowplot()
   
-  p_p.yr <- output_p_s[mu.psi.yr == 0 & term == 'p.yr' & nyr==10 & !grepl("community", visit_mod) &
-                         visit_sim == 0] %>% 
-    ggplot() +
-    geom_point(aes(x = p.yr, y = estimate, group = r, color=prop.visits.same), position = position_dodge(width = 0.02)) +
-    geom_linerange(aes(x = p.yr, ymin = lower, ymax = upper, group = r, color=prop.visits.same), position = position_dodge(width = 0.02)) +
-    theme_cowplot() +
-    facet_wrap(~visit_mod) +
-    geom_abline(intercept = 0, slope = 1, colour = 'grey', linetype = 'dashed') +
-    theme(strip.background = element_blank()) +
-    ylab('Estimated p.yr') + xlab('p.yr')
+  summarised_rmse2 <- output_p_s2[,.(rmse_vals = rmse(true_val, estimate), N = .N), 
+                                  by = .(visit_mod, term, nyr, prop.visits.same)] %>%
+    dplyr::mutate(nyr=paste(nyr, "eras"),
+                  visit_mod=case_when(visit_mod=="allyes" ~ "All",
+                                      visit_mod=="detectedyes" ~ "Detected",
+                                      visit_mod=="visitsyes" ~ "True Visits"))
+  summarised_rmse2$nyr <- factor(summarised_rmse2$nyr, levels=c("2 eras",
+                                                                "5 eras",
+                                                                "10 eras"))
+  summarised_rmse2$visit_mod <- factor(summarised_rmse2$visit_mod, 
+                                       levels=c("All",
+                                                "Detected",
+                                                "True Visits"))
+  p2 <- summarised_rmse2 %>% 
+    filter(term %in% c('mu.psi.yr', 'p.yr'), !is.na(visit_mod)) %>% 
+    ggplot(aes(x = prop.visits.same, y = rmse_vals, colour =  visit_mod, 
+               group = visit_mod)) + 
+    geom_point(alpha=0.9) +
+    geom_line(alpha=0.9) +
+    scale_color_viridis_d(end=0.8, name="Type of Modelling Approach")+
+    geom_hline(yintercept=0, linetype=2)+
+    xlab("Proportion of Community Visits")+
+    ylab("RMSE")+
+    facet_grid(nyr~term) +
+    theme_cowplot()
   
-  p_mu.psi.yr <- output_p_s[mu.psi.yr == 0 & term == 'mu.psi.yr' & nyr==10 & !grepl("community", visit_mod) &
-                              visit_sim == 0] %>% 
-    ggplot() +
-    geom_point(aes(x = p.yr, y = estimate, group = r, color=prop.visits.same), position = position_dodge(width = 0.02)) +
-    geom_linerange(aes(x = p.yr, ymin = lower, ymax = upper, group = r, color=prop.visits.same), position = position_dodge(width = 0.02)) +
-    theme_cowplot() +
-    facet_wrap(~visit_mod) +
-    geom_hline(yintercept = 0,  colour = 'grey', linetype = 'dashed') +
-    theme(strip.background = element_blank()) +
-    ylab('Estimated mu.psi.yr') + xlab('p.yr')
+  summarised_rmse3 <- output_p_s3[,.(rmse_vals = rmse(true_val, estimate), N = .N), 
+                                  by = .(visit_mod, term, nyr, prop.visits.same)] %>%
+    dplyr::mutate(nyr=paste(nyr, "eras"),
+                  visit_mod=case_when(visit_mod=="allyes" ~ "All",
+                                      visit_mod=="detectedyes" ~ "Detected",
+                                      visit_mod=="visitsyes" ~ "True Visits"))
+  summarised_rmse3$nyr <- factor(summarised_rmse3$nyr, levels=c("2 eras",
+                                                                "5 eras",
+                                                                "10 eras"))
+  summarised_rmse3$visit_mod <- factor(summarised_rmse3$visit_mod, 
+                                       levels=c("All",
+                                                "Detected",
+                                                "True Visits"))
+  p3 <- summarised_rmse3 %>% 
+    filter(term %in% c('mu.psi.yr', 'p.yr'), !is.na(visit_mod)) %>% 
+    ggplot(aes(x = prop.visits.same, y = rmse_vals, colour =  visit_mod, 
+               group = visit_mod)) + 
+    geom_point(alpha=0.9) +
+    geom_line(alpha=0.9) +
+    scale_color_viridis_d(end=0.8, name="Type of Modelling Approach")+
+    geom_hline(yintercept=0, linetype=2)+
+    xlab("Proportion of Community Visits")+
+    ylab("RMSE")+
+    facet_grid(nyr~term) +
+    theme_cowplot()
   
-  p_v_p <- plot_grid(p_p.yr, p_mu.psi.yr, ncol = 1)
-  
-  ggsave(p_v_p, filename = paste0("figures/",case,censor,"_v_p.jpeg"), height = 12)
-  
-  
-  
-  
-  ## varying persistence ##
-  
-  p_p.yr_2 <- output_p_s[p.yr == 0 & term == 'p.yr' & nyr==10  & !grepl("community", visit_mod) &
-                           visit_sim == -0.5] %>% 
-    ggplot() +
-    geom_point(aes(x = mu.psi.yr, y = estimate, group = r, color=prop.visits.same), position = position_dodge(width = 0.02)) +
-    geom_linerange(aes(x = mu.psi.yr, ymin = lower, ymax = upper, group = r, color=prop.visits.same), position = position_dodge(width = 0.02)) +
-    theme_cowplot() +
-    facet_wrap(~visit_mod) +
-    geom_hline(yintercept = 0,  colour = 'grey', linetype = 'dashed') +
-    theme(strip.background = element_blank()) +
-    ylab('Estimated p.yr') + xlab('mu.psi.yr')
-  
-  p_mu.psi.yr_2 <- output_p_s[p.yr == 0 & term == 'mu.psi.yr' & nyr==10   & !grepl("community", visit_mod) &
-                                visit_sim == -0.5] %>% 
-    ggplot() +
-    geom_point(aes(x = mu.psi.yr, y = estimate, group = r, color=prop.visits.same), position = position_dodge(width = 0.02)) +
-    geom_linerange(aes(x = mu.psi.yr, ymin = lower, ymax = upper, group = r, color=prop.visits.same), position = position_dodge(width = 0.02)) +
-    theme_cowplot() +
-    facet_wrap(~visit_mod) +
-    geom_abline(intercept = 0, slope = 1, colour = 'grey', linetype = 'dashed') +
-    theme(strip.background = element_blank()) +
-    ylab('Estimated mu.psi.yr') + xlab('mu.psi.yr')
-  
-  p_v_mu.phi.yr <- plot_grid(p_p.yr_2, p_mu.psi.yr_2, ncol = 1)
-  
-  ggsave(p_v_mu.phi.yr, filename = paste0("figures/",case,censor,"_v_mu.phi.yr.jpeg"), height = 12)
-
+  ggarrange(p1, p2, p3, ncol=3, common.legend=TRUE, labels=c("(a)", "(b)", "(c)"),
+            legend="bottom")
 }
 
-
-
-######## P4.1 ########
+######## P4 ########
 # Species have ranges but we don't restrict our
 # indices to them.
-
 main_plot(case = 'P4', censor="all_uncensored_outputs", load_tf = TRUE)
 
-
-######## P4.2 ########
-# Species have ranges and we restrict our
-# indicies to them.
-
-main_plot(case = 'P4', censor="", load_tf = TRUE)
-
-
-
-
-######## P2.2 ########
-# All species are everywhere, no ranges
-# visits vary dependding on the proportion of visits that are the same 
-# MS_all_all, MS_all_visits vs MS_all_detected vs MS_all_community
-# MS_all_community is where only community visits are used to infer non-detections
-
-
-case <- 'p2.2'
-
-output_p <- readRDS(paste0(case,"/outputs/model.summary/all_outputs.rds"))
-
-output_p$nyr <- factor(output_p$nyr, levels = c('5', '10'))
-
-output_p$s <- rep(1:(nrow(output_p)/11), each = 11)
-
-output_p %>% head()
-
-scenarios <- output_p[term %in% c('p.yr', 'mu.phi.yr', 'mu.gam.yr'), .(term, true_val, s)] %>% 
-  pivot_wider(names_from = 'term', values_from = 'true_val') 
-
-output_p_s <- output_p %>% 
-  left_join(scenarios)
-
-summarised_rmse <- output_p_s[,.(rmse_vals = rmse(true_val, estimate), N = .N), by = .(visit_mod, term, nyr, prop.visits.same)]
-
-summarised_rmse %>% 
-  filter(term %in% c('mu.gam.yr', 'mu.phi.yr', 'p.yr')) %>% 
-  ggplot(aes(x = prop.visits.same, y = rmse_vals, colour =  visit_mod, group = visit_mod)) + 
-  geom_point() +
-  geom_line() +
-  facet_grid(nyr~term) +
-  theme_cowplot()
-
-##### by prop.visits.same ###
-
-output_p.v.same.0 <- output_p_s[prop.visits.same == 0]
-
-main_plot(case = '2.2_p.v.same.0', load_tf = FALSE, output_p_s = output_p.v.same.0)
-
-output_p.v.same.1 <- output_p_s[prop.visits.same == 1]
-
-main_plot(case = '2.2_p.v.same.1', load_tf = FALSE, output_p_s = output_p.v.same.1)
-
-output_p.v.same.0.5 <- output_p_s[prop.visits.same == 0.5]
-
-main_plot(case = '2.2_p.v.same.0.5', load_tf = FALSE, output_p_s = output_p.v.same.0.5)
-
-output_p_s[estimate > 10]

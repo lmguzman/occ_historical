@@ -5,13 +5,13 @@ library(purrr)
 library(dplyr)
 library(data.table)
 
-file_sim <- list.files("p4/outputs/model.res/", pattern="no")
+file_sim <- list.files("p4/outputs/model.res/base/", pattern="no")
 
 compiled_res <- list()
 
 for(i in 1:length(file_sim)){
   
-  load(paste0("p4/outputs/model.res/",file_sim[i]), verbose = TRUE)
+  load(paste0("p4/outputs/model.res/base/",file_sim[i]), verbose = TRUE)
   
   file_params <- unlist(str_split(file_sim[i], "_"))
   
@@ -33,7 +33,6 @@ for(i in 1:length(file_sim)){
   
 }
 
-
 all_outputs <- rbindlist(compiled_res)
 
-saveRDS(all_outputs, 'p4/outputs/model.summary/all_uncensored_outputs.rds')
+saveRDS(all_outputs, 'p4/outputs/model.summary/base/all_uncensored_outputs.rds')
