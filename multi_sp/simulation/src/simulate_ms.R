@@ -160,7 +160,6 @@ visit.history <- function(nsp, nsite, nyr, nvisit, type.visit, mu.v.0, mu.v.yr, 
     mu.v.0.sp <- rnorm(nsp, mu.v.0, sd = sigma.v.0)
     mu.v.yr.sp <- rnorm(nsp, mu.v.yr, sd = sigma.v.yr)
     
-    
     vis.arr <- array(NA,
                      dim=c(nsp=nsp, 
                            nsite=nsite,

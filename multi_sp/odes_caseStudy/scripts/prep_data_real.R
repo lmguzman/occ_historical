@@ -14,7 +14,7 @@ prep.data <- function(dd, limit.to.visits, limit.to.range) {
   }
   ## keep only sites that yielded a detection of at least one species
   if(limit.to.visits=='detected') {
-      site.keep <- which(apply(dd$X, 'site', sum, na.rm = TRUE)>0)
+      site.keep <- which(apply(dd$X, 2, sum, na.rm = TRUE)>0)
   }
   # if(limit.to.visits=='community') {
   #     site.keep <- which(apply(dd$X, 'site', sum, na.rm = TRUE)>0)
