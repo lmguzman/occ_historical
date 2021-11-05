@@ -9,9 +9,9 @@ prep.data <- function(dd, limit.to.visits, limit.to.range) {
       site.keep <- 1:dd$nsite
   }
   ## keep only sites that were visited
-  if(limit.to.visits=='visits') {
-      site.keep <- which(apply(dd$vis.arr, 2, sum, na.rm = TRUE)>0)
-  }
+  # if(limit.to.visits=='visits') {
+  #     site.keep <- which(apply(dd$vis.arr, 2, sum, na.rm = TRUE)>0)
+  # }
   ## keep only sites that yielded a detection of at least one species
   if(limit.to.visits=='detected') {
       site.keep <- which(apply(dd$X, 2, sum, na.rm = TRUE)>0)

@@ -322,22 +322,17 @@ ms_nimble <- nimbleCode({
 })
 params <- c('mu.p.0',
             'p.yr',
+            "p.sp",
+            "p.site",
             "psi",
             "psi.yr",
+            "psi.sp",
             'sigma.p.sp',
             'sigma.p.site',
             'mu.psi.0',
             'sigma.psi.sp',
             'mu.psi.yr',
             'sigma.psi.yr')
-
-# run the all_all model
-# set model parameters 
-n.iter=1e4
-n.burnin=1e2
-n.adapt=1e2
-n.thin=3e1
-n.chains=3
 
 # save workspace to port to ComputeCanada
 save.image("ODE_env.RData")

@@ -1,6 +1,12 @@
 library(nimble)
 load("multi_sp/odes_caseStudy/output/ODE_env.RData")
 
+n.iter=1e5
+n.burnin=1e3
+n.adapt=1e3
+n.thin=7.5e1
+n.chains=3
+
 # run the detected_range model
 Zst <- array(1,dim=c(dd_det_range$nsite,dd_det_range$nyr,dd_det_range$nsp))
 inits <- list(Z = Zst,

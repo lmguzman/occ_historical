@@ -6,9 +6,8 @@ library(tidyr)
 library(Metrics)
 library(dplyr)
 
-
 ### main plot code ##
-main_plot <- function(case, censor, load_tf, intervals,...){
+main_plot <- function(case, censor, visit_type, load_tf, intervals,...){
   
   if(load_tf == TRUE){
     output_p <- readRDS(paste0(case,"/outputs/model.summary/", visit_type, "/", 
@@ -31,7 +30,7 @@ main_plot <- function(case, censor, load_tf, intervals,...){
       pivot_wider(names_from = 'term', values_from = 'true_val') 
     output_p_s2 <- output_p2 %>% 
       left_join(scenarios2)
-    print("First file parsed...")
+    print("Second file parsed...")
     
     output_p3 <- dplyr::filter(output_p, visit_sim==0.1)  
     output_p3$nyr <- factor(output_p3$nyr, levels = c('2', '5', '10'))
@@ -40,7 +39,7 @@ main_plot <- function(case, censor, load_tf, intervals,...){
       pivot_wider(names_from = 'term', values_from = 'true_val') 
     output_p_s3 <- output_p3 %>% 
       left_join(scenarios3)
-    print("First file parsed...")
+    print("Third file parsed...")
     
   }
   
@@ -64,7 +63,7 @@ main_plot <- function(case, censor, load_tf, intervals,...){
                group = visit_mod)) + 
     geom_point(alpha=0.9) +
     geom_line(alpha=0.9) +
-    scale_color_viridis_d(end=0.8, name="Type of Modelling Approach")+
+    scale_color_viridis_d(end=0.8, name="Type of Modeling Approach")+
     geom_hline(yintercept=0, linetype=2)+
     xlab("Proportion of Community Visits")+
     ylab("RMSE")+
@@ -90,7 +89,7 @@ main_plot <- function(case, censor, load_tf, intervals,...){
                group = visit_mod)) + 
     geom_point(alpha=0.9) +
     geom_line(alpha=0.9) +
-    scale_color_viridis_d(end=0.8, name="Type of Modelling Approach")+
+    scale_color_viridis_d(end=0.8, name="Type of Modeling Approach")+
     geom_hline(yintercept=0, linetype=2)+
     xlab("Proportion of Community Visits")+
     ylab("RMSE")+
@@ -116,7 +115,7 @@ main_plot <- function(case, censor, load_tf, intervals,...){
                group = visit_mod)) + 
     geom_point(alpha=0.9) +
     geom_line(alpha=0.9) +
-    scale_color_viridis_d(end=0.8, name="Type of Modelling Approach")+
+    scale_color_viridis_d(end=0.8, name="Type of Modeling Approach")+
     geom_hline(yintercept=0, linetype=2)+
     xlab("Proportion of Community Visits")+
     ylab("RMSE")+
@@ -125,10 +124,16 @@ main_plot <- function(case, censor, load_tf, intervals,...){
   
   ggarrange(p1, p2, p3, ncol=3, common.legend=TRUE, labels=c("(a)", "(b)", "(c)"),
             legend="bottom")
+  
+  return(list(summarised_rmse, summarised_rmse2, summarised_rmse3))
 }
 
 ######## P4 ########
 # Species have ranges but we don't restrict our
 # indices to them.
-main_plot(case = 'P4', censor="all_uncensored_outputs", load_tf = TRUE)
+output <- main_plot(case = 'p4', 
+                    censor="all_uncensored_outputs", 
+                    visit_type="base",
+                    load_tf = TRUE)
 
+saveRDS(output, "RMSE_out.rds")
