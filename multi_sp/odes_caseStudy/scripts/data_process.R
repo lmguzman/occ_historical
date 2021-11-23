@@ -96,11 +96,11 @@ all_clusters <- rbindlist(cluster_lists)
 
 size_clusters <- table(all_clusters$cluster) %>% table()
 
-# percentage of single samplings
+# percentage of community samplings
 size_clusters[1]/nrow(all_clusters)
 
-###############################################################################
 
+###############################################################################
 # convert the occurrence data to a spatial object
 occ_spat <- st_as_sf(occ_dat, 
                      coords=c("decimalLongitude", "decimalLatitude"))
@@ -181,8 +181,47 @@ ggplot()+
   scale_x_continuous(limits=c(-93, -60))+
   theme_map()
 
+# merge clusters to occ_grid for community sampling investigation
+com_clusters <- all_clusters %>%
+  dplyr::mutate(year=year(date_clean)) %>%
+  dplyr::mutate(era=(year-year%%10)) %>%
+  dplyr::mutate(year=(year-era)+1) %>%
+  dplyr::mutate(era=(era-1960)/10) %>%
+  left_join(sp_list) %>%
+  filter(!is.na(SPID))
+  
+com_clusters <- st_as_sf(com_clusters, coords=c('decimalLongitude', 'decimalLatitude'))
+
+com_clusters <- grid_1 %>%
+  st_intersection(com_clusters) %>%
+  dplyr::select(SPID, era, year, GID, cluster) %>%
+  unique()
+
+com_clusters <- com_clusters %>%
+  dplyr::mutate(year=case_when(year %in% c(1,2) ~ 1,
+                               year %in% c(3,4) ~ 2,
+                               year %in% c(5,6) ~ 3,
+                               year %in% c(7,8) ~ 4,
+                               year %in% c(9,10) ~ 5))
+
+com_clusters_count <- com_clusters %>%
+  dplyr::select(GID, era, year, cluster) %>%
+  group_by(GID, era, year) %>% 
+  dplyr::mutate(n=n()) %>%
+  ungroup() %>% unique() %>%
+  arrange(n)
+
+ggplot()+
+  geom_histogram(com_clusters_count, mapping=aes(x=n), fill="grey50", binwidth=25)+
+  theme_cowplot()+
+  xlab("Site/Era/Visit-period Cluster Size")+
+  ylab("Frequency")+
+  background_grid()
+
+
+
 # create the master matrix of occurrences
-X <- array(NA, dim=c(nsp=nrow(sp_list),
+X <- array(0, dim=c(nsp=nrow(sp_list),
                nsite=nrow(grid_1),
                nyr=5,
                nvisit=5))
@@ -206,6 +245,11 @@ dd_all_all <- dd
 dd_all_all_prep <- prep.data(dd_all_all, limit.to.visits="all", 
                              limit.to.range="no")
 
+# all_range model
+dd_all_range <- dd
+dd_all_range_prep <- prep.data(dd_all_all, limit.to.visits="all", 
+                             limit.to.range="yes")
+
 # detected_all modeling case
 dd_det_all <- dd
 dd_det_all_prep <- prep.data(dd_det_all, limit.to.visits="detected", 
@@ -221,10 +265,15 @@ visits <- data.frame(yr=dd_det_range_prep$my.constants$yrv,
 visits_ind <- visits %>% group_by(yr, site) %>%
   dplyr::mutate(n=n())
 
+visits <- apply(, 2:3, sum)
+
 ggplot()+
-  geom_line(visits_ind, mapping=aes(x=yr, y=n, group=site, color=site))+
+  geom_line(visits_ind, mapping=aes(x=yr, y=n, group=site), size=1)+
   scale_color_viridis_c()+
-  theme_cowplot()
+  xlab("Era")+
+  ylab("Number of Site/Year Visits")+
+  theme_cowplot()+
+  background_grid()
 
 # model code
 ms_nimble <- nimbleCode({

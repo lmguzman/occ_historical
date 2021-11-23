@@ -8,15 +8,8 @@ prep.data <- function(dd, limit.to.visits, limit.to.range) {
   if(limit.to.visits=='all') {
       site.keep <- 1:dd$nsite
   }
-  ## keep only sites that were visited
-  if(limit.to.visits=='visits') {
-      site.keep <- which(apply(dd$vis.arr, 2, sum, na.rm = TRUE)>0)
-  }
   ## keep only sites that yielded a detection of at least one species
   if(limit.to.visits=='detected') {
-      site.keep <- which(apply(dd$X, 'site', sum, na.rm = TRUE)>0)
-  }
-  if(limit.to.visits=='community') {
       site.keep <- which(apply(dd$X, 'site', sum, na.rm = TRUE)>0)
   }
   
@@ -43,18 +36,6 @@ prep.data <- function(dd, limit.to.visits, limit.to.range) {
       vis.arr[TRUE] <- 1
       vis.arr[nsp.detected==0] <- 0
     }
-    ## if inferring non-detections only for community visits 
-    if(limit.to.visits=='community') {
-      
-      # figure out sites where at least 1 species was detected
-      nsp.detected <- apply(dd$X, 2:4, sum, na.rm = TRUE)
-      # multiply by sites where we know it was a community collection
-      sp.det.com.col <- nsp.detected*dd$vis.col
-      
-      vis.arr[TRUE] <- 0
-      vis.arr[sp.det.com.col!=0] <- 1  ## visits occurred where at least 1 species was detected and there was a community collection
-      vis.arr[dd$X[sp,,,]==1] <- 1 ## visits for sp also occurred where each species was found 
-    }
     
     if(limit.to.range=='yes'){ # restrict to within species' ranges
       vis.arr[!dd$sp.range[sp,],,] <- 0
@@ -74,7 +55,6 @@ prep.data <- function(dd, limit.to.visits, limit.to.range) {
   colnames(master.index) <- c('sp','site','yr','visit')
   
   ## data structures to be returned
-  
   my.data <- list(X=dd$X[master.index])
   
   my.constants <- list(
@@ -86,5 +66,5 @@ prep.data <- function(dd, limit.to.visits, limit.to.range) {
     sitev=master.index[,'site'],
     spv=master.index[,'sp'])
   
-  return(list(my.constants = my.constants, my.data = my.data))
+  return(list(my_constants = my.constants, my_data = my.data))
 }
