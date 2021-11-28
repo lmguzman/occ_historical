@@ -99,7 +99,6 @@ size_clusters <- table(all_clusters$cluster) %>% table()
 # percentage of community samplings
 size_clusters[1]/nrow(all_clusters)
 
-
 ###############################################################################
 # convert the occurrence data to a spatial object
 occ_spat <- st_as_sf(occ_dat, 
@@ -208,17 +207,43 @@ com_clusters_count <- com_clusters %>%
   dplyr::select(GID, era, year, cluster) %>%
   group_by(GID, era, year) %>% 
   dplyr::mutate(n=n()) %>%
-  ungroup() %>% unique() %>%
+  ungroup() %>%
   arrange(n)
 
+com_clusters_count <- com_clusters_count %>%
+  inner_join(data.frame(table(all_clusters$cluster)), by=c("cluster"="Var1"))
+
+com_filter <- com_clusters_count %>%
+  dplyr::group_by(GID, era, year) %>%
+  dplyr::mutate(com_vis=length(Freq[Freq>=2])) %>% ungroup() %>%
+  dplyr::mutate(prop=com_vis/n) %>%
+  dplyr::filter(prop >= 0.5) %>%
+  dplyr::select(era, year, GID, prop) %>%
+  dplyr::mutate(key=paste0(era, year, GID))
+
 ggplot()+
-  geom_histogram(com_clusters_count, mapping=aes(x=n), fill="grey50", binwidth=25)+
-  theme_cowplot()+
-  xlab("Site/Era/Visit-period Cluster Size")+
+  geom_histogram(com_filter, mapping=aes(x=prop), 
+                 binwidth=0.05, fill="grey50", color="white")+
+  scale_x_continuous(limits=c(0.45,1.05),
+                     breaks=seq(0.5,1,0.05))+
+  xlab("Proportion of Community Visits")+
   ylab("Frequency")+
+  theme_cowplot()+
   background_grid()
 
+occ_grid <- occ_grid %>%
+  dplyr::mutate(key=paste0(era, year, GID))
+occ_grid_count <- nrow(occ_grid)
 
+occ_grid <- occ_grid %>%
+  dplyr::filter(key %in% com_filter$key)
+
+nrow(occ_grid)/occ_grid_count
+
+size_clusters <- table(all_clusters$cluster) %>% table()
+
+# percentage of single samplings
+size_clusters[1]/nrow(all_clusters)
 
 # create the master matrix of occurrences
 X <- array(0, dim=c(nsp=nrow(sp_list),
@@ -264,8 +289,6 @@ visits <- data.frame(yr=dd_det_range_prep$my.constants$yrv,
                      site=dd_det_range_prep$my.constants$sitev)
 visits_ind <- visits %>% group_by(yr, site) %>%
   dplyr::mutate(n=n())
-
-visits <- apply(, 2:3, sum)
 
 ggplot()+
   geom_line(visits_ind, mapping=aes(x=yr, y=n, group=site), size=1)+
