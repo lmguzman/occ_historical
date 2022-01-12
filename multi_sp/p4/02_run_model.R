@@ -4,18 +4,20 @@ args <-
 
 library(parallel)
 library(stringr)
-source('multi_sp/simulation/src/prep_data.R')
+source('multi_sp/simulation/src/prep_data3.R')
 
 file_sim <- list.files("multi_sp/p4/outputs/sim.data/")
 
-run_prep_model <- function(file, case, range, model){
+run_prep_model <- function(file, case, range, model, time.interval.yr, time.interval.visit=3){
   
   load(paste0("multi_sp/p4/outputs/sim.data/", file), verbose = TRUE)
   
   ## source model
   source(sprintf('multi_sp/simulation/models/%s.R', model))
 
-  data.prepped <- prep.data(limit.to.visits = case, limit.to.range=range, sim.data)
+  data.prepped <- prep.data(limit.to.visits=case, limit.to.range=range, 
+                            time.interval.yr=time.interval.yr, time.interval.visit=time.interval.visit,
+                            sim.data)
   
   ## set model parameters 
   
@@ -74,24 +76,18 @@ run_prep_model <- function(file, case, range, model){
   
   #### fix file name saving 
   save(res, data.prepped, sim.data,
-       file=paste0("multi_sp/p4/outputs/model.res/", case, range, file))
+       file=paste0("multi_sp/p4/outputs/model.res/", case, range, "_eras", time.interval.yr, file))
 }
 
 run_id <-
   as.numeric(args)
 print(run_id)
 
+  run_prep_model(file_sim[run_id], case = 'detected', range="yes", model = 'ms-nimble', time.interval.yr = 2)
+  run_prep_model(file_sim[run_id], case = 'detected', range="no", model = 'ms-nimble', time.interval.yr = 2)
+  
+  run_prep_model(file_sim[run_id], case = 'visits', range="yes", model = 'ms-nimble', time.interval.yr = 2)
+  run_prep_model(file_sim[run_id], case = 'visits', range="no", model = 'ms-nimble', time.interval.yr = 2)
 
-  run_prep_model(file_sim[run_id], case = 'all', range="yes", model = 'ms-nimble')
-  run_prep_model(file_sim[run_id], case = 'all', range="no", model = 'ms-nimble')
-  
-  run_prep_model(file_sim[run_id], case = 'detected', range="yes", model = 'ms-nimble')
-  run_prep_model(file_sim[run_id], case = 'detected', range="no", model = 'ms-nimble')
-  
-  run_prep_model(file_sim[run_id], case = 'visits', range="yes", model = 'ms-nimble')
-  run_prep_model(file_sim[run_id], case = 'visits', range="no", model = 'ms-nimble')
-  
-  run_prep_model(file_sim[run_id], case = 'community', range="yes", model = 'ms-nimble')
-  run_prep_model(file_sim[run_id], case = 'community', range="no", model = 'ms-nimble')
 
 

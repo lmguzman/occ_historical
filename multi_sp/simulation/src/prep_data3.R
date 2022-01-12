@@ -196,5 +196,12 @@ prep.data <- function(dd, limit.to.visits, limit.to.range, time.interval.yr, tim
     sitev=master.index[,'site'],
     spv=master.index[,'sp'])
   
-  return(list(my.constants = my.constants, my.data = my.data))
+  my.info <- list(
+    time.interval.yr=time.interval.yr,
+    time.interval.visit=time.interval.visit,
+    limit.to.visits=limit.to.visits,
+    limit.to.range=limit.to.range
+  )
+  
+  return(list(my.constants = my.constants, my.data = my.data, my.info = my.info))
 }
