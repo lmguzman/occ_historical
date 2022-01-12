@@ -57,13 +57,13 @@ ms_nimble <- nimbleCode({
       ## occupancy
       logit(psi[yr,sp]) <-
         mu.psi.0 +
-        psi.yr[sp]*(yr-1) +
+        psi.yr[sp]*(yr) +
         psi.sp[sp]
       ## detection
       for(site in 1:nsite) {
         logit(p[site,yr,sp]) <-
           mu.p.0 +
-          p.yr*(yr-1) +
+          p.yr*(yr) +
           p.sp[sp] +
           p.site[site,yr]
       }
@@ -102,7 +102,9 @@ params <- c('mu.p.0',
             'mu.psi.0',
             'sigma.psi.sp',
             'mu.psi.yr',
-            'sigma.psi.yr')
+            'sigma.psi.yr',
+            'psi.sp',
+            'psi.yr')
 
 
 

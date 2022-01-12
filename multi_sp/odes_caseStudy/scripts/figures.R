@@ -100,6 +100,13 @@ M5_plot <- ggplot()+
   background_grid()
 M5_plot
 
+diff.spp <- y.vals2_spp %>%
+  dplyr::select(spp, diff) %>%
+  unique() %>%
+  dplyr::filter(diff >= 0.25 | diff <= -0.25) %>%
+  nrow()
+diff.spp
+
 # All-Range Model (MODEL 7)
 samplech1 <- as.mcmc(ode_all_range$chain1)
 samplech2 <- as.mcmc(ode_all_range$chain2)
@@ -280,6 +287,13 @@ M8_plot <- ggplot()+
   background_grid()
 M8_plot
 
+diff.spp <- y.vals2_spp %>%
+  dplyr::select(spp, diff) %>%
+  unique() %>%
+  dplyr::filter(diff >= 0.25 | diff <= -0.25) %>%
+  nrow()
+diff.spp
+
 # Detected-Range Model (MODEL 8)
 samplech1 <- as.mcmc(ode_det_range2$chain1)
 samplech2 <- as.mcmc(ode_det_range2$chain2)
@@ -368,6 +382,12 @@ M8_plot2 <- ggplot()+
   background_grid()
 M8_plot2
 
+diff.spp <- y.vals2_spp %>%
+  dplyr::select(spp, diff) %>%
+  unique() %>%
+  dplyr::filter(diff >= 0.25 | diff <= -0.25) %>%
+  nrow()
+diff.spp
 
 ## summary table
 y.vals2_sum <- y.vals2_spp %>%

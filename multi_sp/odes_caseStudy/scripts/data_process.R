@@ -97,7 +97,10 @@ all_clusters <- rbindlist(cluster_lists)
 size_clusters <- table(all_clusters$cluster) %>% table()
 
 # percentage of community samplings
-size_clusters[1]/nrow(all_clusters)
+size_clusters[1]/sum(size_clusters[1:length(size_clusters)])
+
+test <- gbif_dat %>%
+  dplyr::select(event)
 
 ###############################################################################
 # convert the occurrence data to a spatial object
@@ -221,8 +224,48 @@ com_filter <- com_clusters_count %>%
   dplyr::select(era, year, GID, prop) %>%
   dplyr::mutate(key=paste0(era, year, GID))
 
+com_cluster_test <- com_clusters_count %>%
+  dplyr::select(GID, era) %>%
+  unique()
+era_grid <- table(com_cluster_test$GID, com_cluster_test$era) %>% rowSums()
+sum(era_grid==1)
+era_grid <- era_grid %>%
+  as.data.frame() %>%
+  dplyr::filter(. > 1)
+
+com_cluster_visit <- com_clusters_count %>%
+  dplyr::select(GID, era, year) %>%
+  unique()
+
+pre_filter <- com_cluster_visit %>%
+  st_drop_geometry() %>%
+  group_by(era, GID) %>%
+  dplyr::mutate(n=n()) %>%
+  ungroup() %>%
+  dplyr::select(era, n) %>%
+  unique() %>%
+  group_by(era) %>%
+  dplyr::mutate(ave=mean(n)) %>%
+  dplyr::select(era, ave) %>%
+  unique()
+mean(pre_filter$ave)
+
+pre_filter <- com_cluster_visit %>%
+  st_drop_geometry() %>%
+  dplyr::filter(GID %in% rownames(era_grid)) %>%
+  group_by(era, GID) %>%
+  dplyr::mutate(n=n()) %>%
+  ungroup() %>%
+  dplyr::select(era, n) %>%
+  unique() %>%
+  group_by(era) %>%
+  dplyr::mutate(ave=mean(n)) %>%
+  dplyr::select(era, ave) %>%
+  unique()
+mean(pre_filter$ave)
+
 ggplot()+
-  geom_histogram(com_filter, mapping=aes(x=prop), 
+  geom_histogram(test, mapping=aes(x=prop), 
                  binwidth=0.05, fill="grey50", color="white")+
   scale_x_continuous(limits=c(0.45,1.05),
                      breaks=seq(0.5,1,0.05))+
@@ -265,6 +308,30 @@ dd <- list(Z=Z, X=X, nsite=nrow(grid_1), nsp=nrow(sp_list), nyr=5, nvisit=5,
                                   nvisit=5)),
            sp.range=res)
 
+test <- occ_grid %>%
+  st_drop_geometry() %>%
+  unique() %>%
+  dplyr::select(era, year, GID) %>%
+  unique() %>%
+  group_by(GID, era) %>%
+  dplyr::mutate(n=n()) %>%
+  ungroup %>%
+  dplyr::select(GID, era, n) %>%
+  unique()
+
+test_ave <- test %>% group_by(era) %>%
+  dplyr::mutate(ave=mean(n)) %>%
+  ungroup() %>%
+  dplyr::select(era, ave) %>% unique()
+
+ggplot()+
+  geom_line(visits_ind, mapping=aes(x=yr, y=n, group=site), size=1)+
+  scale_color_viridis_c()+
+  xlab("Era")+
+  ylab("Number of Site/Year Visits")+
+  theme_cowplot()+
+  background_grid()
+
 # all_all modeling case
 dd_all_all <- dd
 dd_all_all_prep <- prep.data(dd_all_all, limit.to.visits="all", 
@@ -285,18 +352,7 @@ dd_det_range <- dd
 dd_det_range_prep <- prep.data(dd_det_range, limit.to.visits="detected", 
                                limit.to.range="yes")
 
-visits <- data.frame(yr=dd_det_range_prep$my.constants$yrv,
-                     site=dd_det_range_prep$my.constants$sitev)
-visits_ind <- visits %>% group_by(yr, site) %>%
-  dplyr::mutate(n=n())
 
-ggplot()+
-  geom_line(visits_ind, mapping=aes(x=yr, y=n, group=site), size=1)+
-  scale_color_viridis_c()+
-  xlab("Era")+
-  ylab("Number of Site/Year Visits")+
-  theme_cowplot()+
-  background_grid()
 
 # model code
 ms_nimble <- nimbleCode({
