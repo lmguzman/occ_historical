@@ -19,10 +19,10 @@ run_prep_model <- function(file, case, range, model){
   
   ## set model parameters 
   
-  n.iter=1e4
-  n.burnin=1e2
-  n.adapt=1e2
-  n.thin=3e1
+  n.iter=1e5
+  n.burnin=1e3
+  n.adapt=1e3
+  n.thin=3e10
   n.chains=3
   
   ## Initial values 

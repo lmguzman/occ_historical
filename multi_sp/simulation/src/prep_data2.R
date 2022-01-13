@@ -8,10 +8,6 @@ prep.data <- function(dd, limit.to.visits, limit.to.range, time.interval.yr, tim
   if(limit.to.visits=='all') {
       site.keep <- 1:dd$nsite
   }
-  ## keep only sites that were visited
-  if(limit.to.visits=='visits') {
-      site.keep <- which(apply(dd$vis.arr, 2, sum, na.rm = TRUE)>0)
-  }
   ## keep only sites that yielded a detection of at least one species
   if(limit.to.visits=='detected') {
       site.keep <- which(apply(dd$X, 'site', sum, na.rm = TRUE)>0)
@@ -143,7 +139,6 @@ prep.data <- function(dd, limit.to.visits, limit.to.range, time.interval.yr, tim
   colnames(master.index) <- c('sp','site','yr','visit')
   
   ## data structures to be returned
-  
   my.data <- list(X=dd$X[master.index])
   
   my.constants <- list(
@@ -155,5 +150,5 @@ prep.data <- function(dd, limit.to.visits, limit.to.range, time.interval.yr, tim
     sitev=master.index[,'site'],
     spv=master.index[,'sp'])
   
-  return(list(my.constants = my.constants, my.data = my.data))
+  return(list(my_constants = my.constants, my_data = my.data))
 }

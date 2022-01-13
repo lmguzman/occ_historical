@@ -15,6 +15,7 @@ source('multi_sp/simulation/src/simulate_ms.R')
 
 expand.grid.df <- function(...) Reduce(function(...) merge(..., by=NULL), list(...))
 
+
 ## Make a data frame of the parameters 
 
 ## Change either p.yr, or mu.psi.yr
@@ -32,20 +33,23 @@ base_scenario <- data.frame(nsp          = 50,
                              sigma.psi.yr = 0.2,
                              ## visit
                              mu.v.0 = 0, 
-                             mu.v.yr = 0.1,
                              ## type sym
                              type.range = 'polys',
                              type.visit = 'visit_miss')
 
-r <- data.frame(r = c(1, 2, 3, 4, 5))
-p.yr <- data.frame(p.yr = c(0))
-mu.psi.yr <- data.frame(mu.psi.yr = c(0))
-# mu.v.yr <- data.frame(mu.v.yr = c(-0.5, 0, 0.5))
-nyr <- data.frame(nyr = c(2, 5, 10))
+r <- data.frame(r = c(1, 2, 3, 4, 5, 6, 7, 8, 9, 10))
+p.yr <- data.frame(p.yr = c(-0.1, -0.05, 0, 0.05, 0.1))
+mu.psi.yr <- data.frame(mu.psi.yr = c(-0.1, -0.05, 0, 0.05, 0.1))
+mu.v.yr <- data.frame(mu.v.yr = c(-0.1, 0, 0.1))
+nyr <- data.frame(nyr = c(10))
 prop.visits.same <- data.frame(prop.visits.same = c(0, 0.25, 0.5, 0.75, 1))
 
-all_scenarios <- bind_rows(expand.grid.df(base_scenario, p.yr, data.frame(mu.psi.yr = 0), r, nyr, prop.visits.same),
-                           expand.grid.df(base_scenario, mu.psi.yr, data.frame(p.yr = 0), r, nyr, prop.visits.same)) %>% 
+all_scenarios <- bind_rows(expand.grid.df(base_scenario, 
+                                          mu.v.yr, 
+                                          data.frame(mu.psi.yr = 0, p.yr = 0), 
+                                          r, 
+                                          nyr, 
+                                          prop.visits.same)) %>% 
   unique()
 
 

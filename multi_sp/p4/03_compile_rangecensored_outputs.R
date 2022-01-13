@@ -33,6 +33,7 @@ for(i in 1:length(file_sim)){
   
 }
 
+
 all_outputs <- rbindlist(compiled_res)
 
-saveRDS(all_outputs, 'p4/outputs/model.summary/base/all_censored_outputs.rds')
+saveRDS(all_outputs, 'p4/outputs/model.summary/all_censored_outputs_base.rds')

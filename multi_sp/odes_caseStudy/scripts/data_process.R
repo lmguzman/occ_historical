@@ -96,11 +96,13 @@ all_clusters <- rbindlist(cluster_lists)
 
 size_clusters <- table(all_clusters$cluster) %>% table()
 
-# percentage of single samplings
-size_clusters[1]/nrow(all_clusters)
+# percentage of community samplings
+size_clusters[1]/sum(size_clusters[1:length(size_clusters)])
+
+test <- gbif_dat %>%
+  dplyr::select(event)
 
 ###############################################################################
-
 # convert the occurrence data to a spatial object
 occ_spat <- st_as_sf(occ_dat, 
                      coords=c("decimalLongitude", "decimalLatitude"))
@@ -181,8 +183,113 @@ ggplot()+
   scale_x_continuous(limits=c(-93, -60))+
   theme_map()
 
+# merge clusters to occ_grid for community sampling investigation
+com_clusters <- all_clusters %>%
+  dplyr::mutate(year=year(date_clean)) %>%
+  dplyr::mutate(era=(year-year%%10)) %>%
+  dplyr::mutate(year=(year-era)+1) %>%
+  dplyr::mutate(era=(era-1960)/10) %>%
+  left_join(sp_list) %>%
+  filter(!is.na(SPID))
+  
+com_clusters <- st_as_sf(com_clusters, coords=c('decimalLongitude', 'decimalLatitude'))
+
+com_clusters <- grid_1 %>%
+  st_intersection(com_clusters) %>%
+  dplyr::select(SPID, era, year, GID, cluster) %>%
+  unique()
+
+com_clusters <- com_clusters %>%
+  dplyr::mutate(year=case_when(year %in% c(1,2) ~ 1,
+                               year %in% c(3,4) ~ 2,
+                               year %in% c(5,6) ~ 3,
+                               year %in% c(7,8) ~ 4,
+                               year %in% c(9,10) ~ 5))
+
+com_clusters_count <- com_clusters %>%
+  dplyr::select(GID, era, year, cluster) %>%
+  group_by(GID, era, year) %>% 
+  dplyr::mutate(n=n()) %>%
+  ungroup() %>%
+  arrange(n)
+
+com_clusters_count <- com_clusters_count %>%
+  inner_join(data.frame(table(all_clusters$cluster)), by=c("cluster"="Var1"))
+
+com_filter <- com_clusters_count %>%
+  dplyr::group_by(GID, era, year) %>%
+  dplyr::mutate(com_vis=length(Freq[Freq>=2])) %>% ungroup() %>%
+  dplyr::mutate(prop=com_vis/n) %>%
+  dplyr::filter(prop >= 0.5) %>%
+  dplyr::select(era, year, GID, prop) %>%
+  dplyr::mutate(key=paste0(era, year, GID))
+
+com_cluster_test <- com_clusters_count %>%
+  dplyr::select(GID, era) %>%
+  unique()
+era_grid <- table(com_cluster_test$GID, com_cluster_test$era) %>% rowSums()
+sum(era_grid==1)
+era_grid <- era_grid %>%
+  as.data.frame() %>%
+  dplyr::filter(. > 1)
+
+com_cluster_visit <- com_clusters_count %>%
+  dplyr::select(GID, era, year) %>%
+  unique()
+
+pre_filter <- com_cluster_visit %>%
+  st_drop_geometry() %>%
+  group_by(era, GID) %>%
+  dplyr::mutate(n=n()) %>%
+  ungroup() %>%
+  dplyr::select(era, n) %>%
+  unique() %>%
+  group_by(era) %>%
+  dplyr::mutate(ave=mean(n)) %>%
+  dplyr::select(era, ave) %>%
+  unique()
+mean(pre_filter$ave)
+
+pre_filter <- com_cluster_visit %>%
+  st_drop_geometry() %>%
+  dplyr::filter(GID %in% rownames(era_grid)) %>%
+  group_by(era, GID) %>%
+  dplyr::mutate(n=n()) %>%
+  ungroup() %>%
+  dplyr::select(era, n) %>%
+  unique() %>%
+  group_by(era) %>%
+  dplyr::mutate(ave=mean(n)) %>%
+  dplyr::select(era, ave) %>%
+  unique()
+mean(pre_filter$ave)
+
+ggplot()+
+  geom_histogram(test, mapping=aes(x=prop), 
+                 binwidth=0.05, fill="grey50", color="white")+
+  scale_x_continuous(limits=c(0.45,1.05),
+                     breaks=seq(0.5,1,0.05))+
+  xlab("Proportion of Community Visits")+
+  ylab("Frequency")+
+  theme_cowplot()+
+  background_grid()
+
+occ_grid <- occ_grid %>%
+  dplyr::mutate(key=paste0(era, year, GID))
+occ_grid_count <- nrow(occ_grid)
+
+occ_grid <- occ_grid %>%
+  dplyr::filter(key %in% com_filter$key)
+
+nrow(occ_grid)/occ_grid_count
+
+size_clusters <- table(all_clusters$cluster) %>% table()
+
+# percentage of single samplings
+size_clusters[1]/nrow(all_clusters)
+
 # create the master matrix of occurrences
-X <- array(NA, dim=c(nsp=nrow(sp_list),
+X <- array(0, dim=c(nsp=nrow(sp_list),
                nsite=nrow(grid_1),
                nyr=5,
                nvisit=5))
@@ -201,10 +308,39 @@ dd <- list(Z=Z, X=X, nsite=nrow(grid_1), nsp=nrow(sp_list), nyr=5, nvisit=5,
                                   nvisit=5)),
            sp.range=res)
 
+test <- occ_grid %>%
+  st_drop_geometry() %>%
+  unique() %>%
+  dplyr::select(era, year, GID) %>%
+  unique() %>%
+  group_by(GID, era) %>%
+  dplyr::mutate(n=n()) %>%
+  ungroup %>%
+  dplyr::select(GID, era, n) %>%
+  unique()
+
+test_ave <- test %>% group_by(era) %>%
+  dplyr::mutate(ave=mean(n)) %>%
+  ungroup() %>%
+  dplyr::select(era, ave) %>% unique()
+
+ggplot()+
+  geom_line(visits_ind, mapping=aes(x=yr, y=n, group=site), size=1)+
+  scale_color_viridis_c()+
+  xlab("Era")+
+  ylab("Number of Site/Year Visits")+
+  theme_cowplot()+
+  background_grid()
+
 # all_all modeling case
 dd_all_all <- dd
 dd_all_all_prep <- prep.data(dd_all_all, limit.to.visits="all", 
                              limit.to.range="no")
+
+# all_range model
+dd_all_range <- dd
+dd_all_range_prep <- prep.data(dd_all_all, limit.to.visits="all", 
+                             limit.to.range="yes")
 
 # detected_all modeling case
 dd_det_all <- dd
@@ -216,15 +352,7 @@ dd_det_range <- dd
 dd_det_range_prep <- prep.data(dd_det_range, limit.to.visits="detected", 
                                limit.to.range="yes")
 
-visits <- data.frame(yr=dd_det_range_prep$my.constants$yrv,
-                     site=dd_det_range_prep$my.constants$sitev)
-visits_ind <- visits %>% group_by(yr, site) %>%
-  dplyr::mutate(n=n())
 
-ggplot()+
-  geom_line(visits_ind, mapping=aes(x=yr, y=n, group=site, color=site))+
-  scale_color_viridis_c()+
-  theme_cowplot()
 
 # model code
 ms_nimble <- nimbleCode({
@@ -322,22 +450,17 @@ ms_nimble <- nimbleCode({
 })
 params <- c('mu.p.0',
             'p.yr',
+            "p.sp",
+            "p.site",
             "psi",
             "psi.yr",
+            "psi.sp",
             'sigma.p.sp',
             'sigma.p.site',
             'mu.psi.0',
             'sigma.psi.sp',
             'mu.psi.yr',
             'sigma.psi.yr')
-
-# run the all_all model
-# set model parameters 
-n.iter=1e4
-n.burnin=1e2
-n.adapt=1e2
-n.thin=3e1
-n.chains=3
 
 # save workspace to port to ComputeCanada
 save.image("ODE_env.RData")

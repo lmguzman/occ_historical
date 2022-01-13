@@ -1,3 +1,4 @@
+
 prep.data <- function(dd, limit.to.visits, limit.to.range, time.interval.yr, time.interval.visit) {
   
   ## keep only detected species:
@@ -103,12 +104,15 @@ prep.data <- function(dd, limit.to.visits, limit.to.range, time.interval.yr, tim
                                    year= paste0("yr_", 1:time.interval.yr),
                                    visit=paste0("v_", 1:time.interval.visit)))
   
+  names(dim(occ.arr)) <- c("nsp", "nsite", 'nyr', 'nvisit')
+  
   vis.arr[cbind(match(visits.new.time.interval$sp, dimnames(dd$X)$sp), match(visits.new.time.interval$site, dimnames(dd$X)$site), 
                 match(visits.new.time.interval$yr, paste0("yr_", 1:time.interval.yr)), 
                 match(visits.new.time.interval$visit,paste0("v_", 1:time.interval.visit)))] <- 1 
   
   dd$X2 <- occ.arr
   dd$vis.arr2 <- vis.arr
+  
   
   ## generate master index (to improve model efficiency (this prevents
   ## unnecessary iterating through all irrelevant sites and visits)
@@ -185,16 +189,23 @@ prep.data <- function(dd, limit.to.visits, limit.to.range, time.interval.yr, tim
   
   ## data structures to be returned
   
-  my.data <- list(X=dd$X[master.index])
+  my.data <- list(X=dd$X2[master.index])
   
   my.constants <- list(
-    nsp=dim(dd$X)['nsp'],
-    nsite=dim(dd$X)['nsite'],
-    nyr=dim(dd$X)['nyr'],
+    nsp=dim(dd$X2)['nsp'],
+    nsite=dim(dd$X2)['nsite'],
+    nyr=dim(dd$X2)['nyr'],
     nind=nrow(master.index),
     yrv=master.index[,'yr'],
     sitev=master.index[,'site'],
     spv=master.index[,'sp'])
   
-  return(list(my.constants = my.constants, my.data = my.data))
+  my.info <- list(
+    time.interval.yr=time.interval.yr,
+    time.interval.visit=time.interval.visit,
+    limit.to.visits=limit.to.visits,
+    limit.to.range=limit.to.range
+  )
+  
+  return(list(my.constants = my.constants, my.data = my.data, my.info = my.info))
 }

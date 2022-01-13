@@ -185,14 +185,14 @@ visit.history <- function(nsp, nsite, nyr, nvisit, type.visit, mu.v.0, mu.v.yr, 
             
             # if it is a community visit, then all of the species get the same
             
-            vis.arr[,site,yr,visit] <- rbinom(1,1,expit(mu.v.0 + mu.v.yr*(yr-1)))
+            vis.arr[,site,yr,visit] <- rbinom(1,1,expit(mu.v.0 + mu.v.yr*(yr)))
             
           }else(
             for(sp in 1:nsp){
               
               # If it is an individual species visit then not all of the species get the same
               
-              vis.arr[sp,site,yr,visit] <- rbinom(1,1, expit(mu.v.0.sp[sp] + mu.v.yr.sp[sp]*(yr-1)))
+              vis.arr[sp,site,yr,visit] <- rbinom(1,1, expit(mu.v.0.sp[sp] + mu.v.yr.sp[sp]*(yr)))
               
             }
           )
@@ -273,14 +273,14 @@ make.data <- function(## data structure set up
 
         psi.mat[sp,site,yr] <- expit(mu.psi.0 +
                                        psi.sp[sp] +
-                                       psi.yr[sp]*(yr-1))
+                                       psi.yr[sp]*(yr))
         
         for(visit in 1:nvisit) {
           
           p.mat[sp,site,yr,visit] <- expit(mu.p.0 +
                                              p.sp[sp] +
                                              p.site[site,yr] +
-                                             p.yr*(yr-1))
+                                             p.yr*(yr))
         }
       }
     }
@@ -358,6 +358,9 @@ make.data <- function(## data structure set up
               ## visit
               mu.v.0 = mu.v.0, 
               mu.v.yr = mu.v.yr,
+              ## species specific values
+              psi.sp = psi.sp,
+              psi.yr = psi.yr,
               ## type sym
               type.range = type.range,
               type.visit = type.visit,
