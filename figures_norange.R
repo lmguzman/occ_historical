@@ -1,6 +1,14 @@
+library(data.table)
+library(ggplot2)
+library(ggpubr)
+library(cowplot)
+library(tidyr)
+library(Metrics)
+library(dplyr)
 ### main plot code ##
 main_plot <- function(case, censor, load_tf, intervals,...){
   
+   case <- "p2.2"
   if(load_tf == TRUE){
     output_p <- readRDS(paste0("multi_sp/",case,"/outputs/model.summary/all_outputs.rds"))
     print("Main file loading successful...")
@@ -48,6 +56,9 @@ main_plot <- function(case, censor, load_tf, intervals,...){
                                       levels=c("All",
                                                "Detected",
                                                "True Visits"))
+  
+  saveRDS(summarised_rmse, "multi_sp/p2.2/outputs/model.summary/RMSE_summary_1.rds")
+  
   p1 <- summarised_rmse %>% 
     filter(term %in% c('mu.psi.yr', 'p.yr'), !is.na(visit_mod)) %>% 
     ggplot(aes(x = prop.visits.same, y = rmse_vals, colour =  visit_mod, 
@@ -123,3 +134,20 @@ main_plot <- function(case, censor, load_tf, intervals,...){
 # Species have ranges but we don't restrict our
 # indices to them.
 main_plot(case = 'P4', censor="all_uncensored_outputs", load_tf = TRUE)
+
+
+
+summarised_rmse %>% 
+  filter(visit_mod  !='All') %>% 
+  filter(term %in% c('mu.psi.yr', 'p.yr'), !is.na(visit_mod)) %>% 
+  ggplot(aes(x = prop.visits.same, y = rmse_vals, colour =  visit_mod, 
+             group = visit_mod)) + 
+  geom_point(alpha=0.9) +
+  geom_line(alpha=0.9) +
+  scale_color_viridis_d(end=0.8, name="Type of Modelling Approach")+
+  geom_hline(yintercept=0, linetype=2)+
+  xlab("Proportion of Community Visits")+
+  ylab("RMSE")+
+  facet_grid(nyr~term) +
+  theme_cowplot()
+
