@@ -5,6 +5,7 @@ args <-
 
 library(parallel)
 library(stringr)
+library(dplyr)
 source('~/scratch/occ_historical/multi_sp/simulation/src/prep_data3.R')
 
 file_sim <- list.files("~/scratch/occ_historical/multi_sp/p2.2/outputs/sim.data/")
@@ -77,7 +78,7 @@ run_prep_model <- function(file, case, range, model, time.interval.yr, time.inte
   
   #### fix file name saving 
   save(res, data.prepped, sim.data,
-       file=paste0("~/scratch/occ_historical/multi_sp/p2.2/outputs/model.res/", case, range, file))
+       file=paste0("~/scratch/occ_historical/multi_sp/p2.2/outputs/model.res/", case, range, "_eras", time.interval.yr, file))
 }
 
 run_id <-
