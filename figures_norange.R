@@ -131,6 +131,145 @@ main_plot <- function(case, censor, load_tf, intervals,...){
   ggsave(p_all, filename = "multi_sp/Figure_1_RMSE.pdf")
 }
 
+####### abundant vs rare species rmse #####
+
+case <- "p2.2"
+
+species_occupancy <- readRDS(paste0("multi_sp/",case,"/outputs/model.summary/species_orig_occupancy.rds"))
+
+species_occupancy_abun <- species_occupancy %>% 
+  mutate(extent = case_when(y_1 < 30 ~ 'rare',
+                            y_1 >= 30 & y_1 < 70 ~ 'medium',
+                            y_1 >= 70 ~ 'abundant'),
+         sp = rep(1:50, 1314))
+
+### mu.v.yr = -0.1
+species_occupancy_abun1 <- species_occupancy_abun[mu.v.yr == -0.1,.(sp, extent, visit_sim, visit_mod, eras, r, nyr, prop.visits.same, mu.v.yr, s)]
+
+psi.yr_terms <- output_p_s1[str_detect(term, "psi.yr\\[")]
+psi.yr_terms$sp <- as.numeric(str_extract(psi.yr_terms$term, "\\d+"))
+
+setkeyv(species_occupancy_abun1, c("visit_sim", "visit_mod", "eras", "r", "nyr", "prop.visits.same", "mu.v.yr", "s", "sp"))
+setkeyv(psi.yr_terms, c("visit_sim", "visit_mod", "eras", "r", "nyr", "prop.visits.same", "mu.v.yr", "s", "sp"))
+
+
+psi.yr_terms[species_occupancy_abun1][extent == 'abundant'] %>% 
+  ggplot(aes(x = true_val, y = estimate, colour = prop.visits.same, shape = visit_mod)) +
+  geom_point() +
+  geom_abline(intercept = 0, slope = 1, colour = 'red') +
+  facet_grid(eras~prop.visits.same, scales = 'free_y') +
+  theme_cowplot()
+
+psi.yr_terms[species_occupancy_abun1][extent == 'rare'] %>% 
+  ggplot(aes(x = true_val, y = estimate, colour = prop.visits.same, shape = visit_mod)) +
+  geom_point() +
+  geom_abline(intercept = 0, slope = 1, colour = 'red') +
+  facet_grid(eras~prop.visits.same, scales = 'free_y') +
+  theme_cowplot()
+
+rmse_species1 <- psi.yr_terms[species_occupancy_abun1][,.(rmse_vals = rmse(true_val, estimate), N = .N), 
+                                                       by = .(visit_mod, extent, eras, prop.visits.same)]  %>%
+  dplyr::mutate(eras=paste(str_extract(eras, "\\d+"), 'eras'),
+                visit_mod=case_when(visit_mod=="allno" ~ "All",
+                                    visit_mod=="detectedno" ~ "Detected",
+                                    visit_mod=="visitsno" ~ "True Visits"))
+rmse_species1$eras <- factor(rmse_species1$eras, levels=c("2 eras",
+                                                          "5 eras",
+                                                          "10 eras"))
+rmse_species1$visit_mod <- factor(rmse_species1$visit_mod, 
+                                  levels=c("All",
+                                           "Detected",
+                                           "True Visits"))
+
+species1 <- rmse_species1  %>% 
+  ggplot(aes(x = prop.visits.same, y = rmse_vals, colour =  visit_mod, 
+             group = visit_mod)) + 
+  geom_point(alpha=0.9) +
+  geom_line(alpha=0.9) +
+  scale_color_viridis_d(end=0.8, name="Type of Modelling Approach")+
+  geom_hline(yintercept=0, linetype=2)+
+  xlab("Proportion of Community Visits")+
+  ylab("RMSE")+
+  facet_grid(eras~extent, scales = 'free_y') +
+  theme_cowplot() +
+  theme(legend.position = 'bottom')
+
+
+### mu.v.yr = 0
+species_occupancy_abun2 <- species_occupancy_abun[mu.v.yr == 0,.(sp, extent, visit_sim, visit_mod, eras, r, nyr, prop.visits.same, mu.v.yr, s)]
+
+psi.yr_terms <- output_p_s2[str_detect(term, "psi.yr\\[")]
+psi.yr_terms$sp <- as.numeric(str_extract(psi.yr_terms$term, "\\d+"))
+
+setkeyv(species_occupancy_abun2, c("visit_sim", "visit_mod", "eras", "r", "nyr", "prop.visits.same", "mu.v.yr", "s", "sp"))
+setkeyv(psi.yr_terms, c("visit_sim", "visit_mod", "eras", "r", "nyr", "prop.visits.same", "mu.v.yr", "s", "sp"))
+
+rmse_species2 <- psi.yr_terms[species_occupancy_abun2][,.(rmse_vals = rmse(true_val, estimate), N = .N), 
+                                      by = .(visit_mod, extent, eras, prop.visits.same)]  %>%
+  dplyr::mutate(eras=paste(str_extract(eras, "\\d+"), 'eras'),
+                visit_mod=case_when(visit_mod=="allno" ~ "All",
+                                    visit_mod=="detectedno" ~ "Detected",
+                                    visit_mod=="visitsno" ~ "True Visits"))
+rmse_species2$eras <- factor(rmse_species2$eras, levels=c("2 eras",
+                                                                "5 eras",
+                                                                "10 eras"))
+rmse_species2$visit_mod <- factor(rmse_species2$visit_mod, 
+                                     levels=c("All",
+                                              "Detected",
+                                              "True Visits"))
+
+species2 <- rmse_species2  %>% 
+  ggplot(aes(x = prop.visits.same, y = rmse_vals, colour =  visit_mod, 
+             group = visit_mod)) + 
+  geom_point(alpha=0.9) +
+  geom_line(alpha=0.9) +
+  scale_color_viridis_d(end=0.8, name="Type of Modelling Approach")+
+  geom_hline(yintercept=0, linetype=2)+
+  xlab("Proportion of Community Visits")+
+  ylab("RMSE")+
+  facet_grid(eras~extent, scales = 'free_y') +
+  theme_cowplot() +
+  theme(legend.position = 'bottom')
+
+
+
+### mu.v.yr = 0.1
+species_occupancy_abun3 <- species_occupancy_abun[mu.v.yr == 0.1,.(sp, extent, visit_sim, visit_mod, eras, r, nyr, prop.visits.same, mu.v.yr, s)]
+
+psi.yr_terms <- output_p_s3[str_detect(term, "psi.yr\\[")]
+psi.yr_terms$sp <- as.numeric(str_extract(psi.yr_terms$term, "\\d+"))
+
+setkeyv(species_occupancy_abun3, c("visit_sim", "visit_mod", "eras", "r", "nyr", "prop.visits.same", "mu.v.yr", "s", "sp"))
+setkeyv(psi.yr_terms, c("visit_sim", "visit_mod", "eras", "r", "nyr", "prop.visits.same", "mu.v.yr", "s", "sp"))
+
+rmse_species3 <- psi.yr_terms[species_occupancy_abun3][,.(rmse_vals = rmse(true_val, estimate), N = .N), 
+                                                       by = .(visit_mod, extent, eras, prop.visits.same)]  %>%
+  dplyr::mutate(eras=paste(str_extract(eras, "\\d+"), 'eras'),
+                visit_mod=case_when(visit_mod=="allno" ~ "All",
+                                    visit_mod=="detectedno" ~ "Detected",
+                                    visit_mod=="visitsno" ~ "True Visits"))
+rmse_species3$eras <- factor(rmse_species3$eras, levels=c("2 eras",
+                                                          "5 eras",
+                                                          "10 eras"))
+rmse_species3$visit_mod <- factor(rmse_species3$visit_mod, 
+                                  levels=c("All",
+                                           "Detected",
+                                           "True Visits"))
+
+species3 <- rmse_species3  %>% 
+  ggplot(aes(x = prop.visits.same, y = rmse_vals, colour =  visit_mod, 
+             group = visit_mod)) + 
+  geom_point(alpha=0.9) +
+  geom_line(alpha=0.9) +
+  scale_color_viridis_d(end=0.8, name="Type of Modelling Approach")+
+  geom_hline(yintercept=0, linetype=2)+
+  xlab("Proportion of Community Visits")+
+  ylab("RMSE")+
+  facet_grid(eras~extent, scales = 'free_y') +
+  theme_cowplot() +
+  theme(legend.position = 'bottom')
+
+
 ######## P4 ########
 # Species have ranges but we don't restrict our
 # indices to them.

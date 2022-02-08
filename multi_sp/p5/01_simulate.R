@@ -1,5 +1,5 @@
 ###### Part 1 #####
-
+#P5
 ## 1. 
 # Simulation:
 # - All species are everywhere, no ranges
@@ -40,7 +40,7 @@ base_scenario <- data.frame(nsp          = 50,
                              #mu.psi.yr = 0, 
                              nyr = 10)
 
-r <- data.frame(r = 1:5)
+r <- data.frame(r = 1:10)
 p.yr <- data.frame(p.yr = c(-0.1, -0.05, 0, 0.05, 0.1))
 mu.psi.yr <- data.frame(mu.psi.yr = c(-0.1, -0.05, 0, 0.05, 0.1))
 #nyr <- data.frame(nyr = c(2, 5, 10))
