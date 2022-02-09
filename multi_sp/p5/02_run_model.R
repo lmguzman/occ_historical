@@ -1,3 +1,4 @@
+#p5
 #!/usr/bin/env Rscript
 args <-
   commandArgs(trailingOnly=TRUE)
@@ -5,46 +6,48 @@ args <-
 
 library(parallel)
 library(stringr)
-source('~/scratch/occ_historical/multi_sp/simulation/src/prep_data.R')
+library(dplyr)
+library(sf)
+source('~/scratch/occ_historical/multi_sp/simulation/src/prep_data3.R')
 
 file_sim <- list.files("~/scratch/occ_historical/multi_sp/p5/outputs/sim.data/")
 
-run_prep_model <- function(file, case, range, model){
+run_prep_model <- function(file, case, range, model, time.interval.yr, time.interval.visit=3){
   
   load(paste0("~/scratch/occ_historical/multi_sp/p5/outputs/sim.data/", file), verbose = TRUE)
-  #load(paste0("multi_sp/p5/outputs/sim.data/", file), verbose = TRUE)
+  
   ## source model
   source(sprintf('~/scratch/occ_historical/multi_sp/simulation/models/%s.R', model))
-  #source(sprintf('multi_sp/simulation/models/%s.R', model))
-  
 
-  data.prepped <- prep.data(limit.to.visits = case, limit.to.range=range, sim.data)
+
+  data.prepped <- prep.data(dd = sim.data, limit.to.visits = case, limit.to.range=range, time.interval.yr=time.interval.yr, time.interval.visit=time.interval.visit)
   
   ## set model parameters 
   
   n.iter=1e5
   n.burnin=1e3
-  n.adapt=1e3
+  n.adapt=1e2
   n.thin=1e2
   n.chains=3
   
   ## Initial values 
-  Zst <- array(1,dim=c(sim.data$nsite,sim.data$nyr,sim.data$nsp))
+  Zst <- array(1,dim=c(data.prepped$my.constants$nsite,data.prepped$my.constants$nyr,data.prepped$my.constants$nsp))
   
   inits <- list(Z = Zst,
                 mu.p.0 = 0,
                 p.yr = 0,
                 sigma.p.sp = 0.1,
-                p.sp = rep(0,sim.data$nsp),
+                p.sp = rep(0,data.prepped$my.constants$nsp),
                 sigma.p.site = 0.1,
-                p.site = matrix(0, nrow = sim.data$nsite, ncol = sim.data$nyr), 
+                p.site = matrix(0, nrow = data.prepped$my.constants$nsite, ncol = data.prepped$my.constants$nyr), 
                 mu.psi.0 = 0,
                 sigma.psi.sp = 0.1,
-                psi.sp = rep(0,sim.data$nsp),
+                psi.sp = rep(0,data.prepped$my.constants$nsp),
                 mu.psi.yr = 0,
                 sigma.psi.yr = 0.1,
-                psi.yr = rep(0,sim.data$nsp),
+                psi.yr = rep(0,data.prepped$my.constants$nsp),
                 mu.p = rep(0, data.prepped$my.constants$nind))
+  
   
   ### nimble model 
   
@@ -78,16 +81,15 @@ run_prep_model <- function(file, case, range, model){
   
   #### fix file name saving 
   save(res, data.prepped, sim.data,
-       file=paste0("~/scratch/occ_historical/multi_sp/p5/outputs/model.res/", case, range, file))
+       file=paste0("~/scratch/occ_historical/multi_sp/p5/outputs/model.res/", case, range, "_eras", time.interval.yr, file))
 }
 
 run_id <-
   as.numeric(args)
 print(run_id)
 
-  run_prep_model(file_sim[run_id], case = 'detected', range="no", model = 'ms-nimble')
+  run_prep_model(file_sim[run_id], case = 'detected', range="yes", model = 'ms-nimble', time.interval.yr = 2)
   
-  run_prep_model(file_sim[run_id], case = 'visits', range="no", model = 'ms-nimble')
+  run_prep_model(file_sim[run_id], case = 'visits', range="yes", model = 'ms-nimble', time.interval.yr = 2)
   
-
 

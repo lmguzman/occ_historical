@@ -2,7 +2,7 @@
 prep.data <- function(dd, limit.to.visits, limit.to.range, time.interval.yr, time.interval.visit) {
   
   ## keep only detected species:
-  sp.keep <- which(apply(dd$Z, 1, sum, na.rm=TRUE)>0)
+  sp.keep <- which(apply(dd$X, 1, sum, na.rm=TRUE)>0)
   
   ## which sites to keep will depend on limit.to.visits
   ## keep all sites, even those without any detections
@@ -36,7 +36,9 @@ prep.data <- function(dd, limit.to.visits, limit.to.range, time.interval.yr, tim
   
   visits.only <- which(dd$vis.arr==1, arr.ind=TRUE) %>% data.frame()
     
-  names(visits.only) <- c("sp", "site", "yr", "visit")
+  names(presence.only) <- c("spn", "siten", "yr", "visit")
+  
+  names(visits.only) <- c("spn", "siten", "yr", "visit")
   
   new_year <- expand.grid(yr = 1:dd$nyr, visit = 1:dd$nvisit) %>% 
     arrange(yr) %>% 
@@ -64,22 +66,23 @@ prep.data <- function(dd, limit.to.visits, limit.to.range, time.interval.yr, tim
   
   new.time.interval <-data.frame(syr = unique.syr, time.cut.yr, time.cut.visit, time.cut.visit.2)
   
+  sp_names <- data.frame(spn = 1:length(dimnames(dd$X)$sp), sp = dimnames(dd$X)$sp)
+  site_names <-data.frame(siten = 1:length(dimnames(dd$X)$site), site = dimnames(dd$X)$site)
+  
   presence.new.time.interval <- presence.new.year %>% 
     left_join(new.time.interval) %>% 
-    group_by(sp, site, time.cut.yr, time.cut.visit.2) %>% 
+    group_by(spn, siten, time.cut.yr, time.cut.visit.2) %>% 
     summarise(presence = 1) %>% 
-    mutate(sp = paste('sp',str_pad(sp,4,pad='0'),sep='_'),
-           site = paste('site',str_pad(site,4,pad='0'),sep='_'),
-           yr = paste('yr',time.cut.yr,sep='_'),
+    left_join(sp_names) %>% left_join(site_names) %>% 
+    mutate(yr = paste('yr',time.cut.yr,sep='_'),
            visit = paste('v',time.cut.visit.2,sep='_'))
   
   visits.new.time.interval <- visits.new.year %>% 
     left_join(new.time.interval) %>% 
-    group_by(sp, site, time.cut.yr, time.cut.visit.2) %>% 
+    group_by(spn, siten, time.cut.yr, time.cut.visit.2) %>% 
     summarise(presence = 1) %>% 
-    mutate(sp = paste('sp',str_pad(sp,4,pad='0'),sep='_'),
-           site = paste('site',str_pad(site,4,pad='0'),sep='_'),
-           yr = paste('yr',time.cut.yr,sep='_'),
+    left_join(sp_names) %>% left_join(site_names) %>% 
+    mutate(yr = paste('yr',time.cut.yr,sep='_'),
            visit = paste('v',time.cut.visit.2,sep='_'))
 
   
@@ -95,7 +98,6 @@ prep.data <- function(dd, limit.to.visits, limit.to.range, time.interval.yr, tim
   occ.arr[cbind(match(presence.new.time.interval$sp, dimnames(dd$X)$sp), match(presence.new.time.interval$site, dimnames(dd$X)$site), 
           match(presence.new.time.interval$yr, paste0("yr_", 1:time.interval.yr)), 
                 match(presence.new.time.interval$visit,paste0("v_", 1:time.interval.visit)))] <- 1 
-  
   
   
   vis.arr <- array(0, dim = c(dd$nsp, dd$nsite, time.interval.yr, time.interval.visit), 
@@ -149,13 +151,15 @@ prep.data <- function(dd, limit.to.visits, limit.to.range, time.interval.yr, tim
       # species and add to a list
       sp_poly <- list()
       for(i in 1:dd$nsp){
-        sp_GID <- rowSums(dd$X2[i,,,], c(2,3,4))
+        sp_GID <- rowSums(dd$X2[sp,,,], c(2,3,4))
         sp_centroids <- c()
         for(j in 1:dd$nsite){
           if(sp_GID[j] >= 1){
-            sp_centroids <- sp_centroids %>% append(st_centroid(grid[j,])$x)
+            sp_centroids <- sp_centroids %>% base::append(st_centroid(grid[j,])$x)
+
           }
         }
+        
         sp_poly[[i]] <- st_convex_hull(st_union(sp_centroids))
       }
       
@@ -204,7 +208,9 @@ prep.data <- function(dd, limit.to.visits, limit.to.range, time.interval.yr, tim
     time.interval.yr=time.interval.yr,
     time.interval.visit=time.interval.visit,
     limit.to.visits=limit.to.visits,
-    limit.to.range=limit.to.range
+    limit.to.range=limit.to.range,
+    sp.keep = names(sp.keep), 
+    site.keep = names(site.keep)
   )
   
   return(list(my.constants = my.constants, my.data = my.data, my.info = my.info))
