@@ -109,7 +109,7 @@ make.ranges <- function(nsp, nsite, type.range) {
     nsite.by.sp <- round(nsite * prop.sites)
   } else if(type.range == 'polys'){
     polys <- GenPoly(numpoly=nsp, gridsize=sqrt(nsite))
-    res <- array(unlist(PolyToMatrix(polys)), dim=c(nsp, nsite))
+    res <- do.call(rbind, lapply(PolyToMatrix(polys), as.vector))
     return(res)
   }
   

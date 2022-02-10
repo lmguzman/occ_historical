@@ -19,6 +19,7 @@ prep.data <- function(dd, limit.to.visits, limit.to.range, time.interval.yr, tim
   }
   
   ## subset based on the above
+  dd$nsite.old  <- dim(dd$X)[2]
   dd$Z        <- dd$Z[sp.keep,site.keep,,drop=FALSE]
   dd$X        <- dd$X[sp.keep,site.keep,,,drop=FALSE]
   dd$sp.range <- dd$sp.range[sp.keep,site.keep,drop=FALSE]
@@ -142,42 +143,35 @@ prep.data <- function(dd, limit.to.visits, limit.to.range, time.interval.yr, tim
                                           c(0,0)))))
       
       # create the grid using the specified number of simulated sites
-      grid <- st_make_grid(sfc, cellsize=1/sqrt(dd$nsite), square=TRUE) %>%
+      grid <- st_make_grid(sfc, cellsize=1/sqrt(dd$nsite.old), square=TRUE) %>%
         st_as_sf() %>%
         dplyr::mutate(GID=row_number())
       
       # iteratively add points for each species based on the centroids of
       # each grid cell in the matrix, then construct a convex polygon for each
       # species and add to a list
-      sp_poly <- list()
-      for(i in 1:dd$nsp){
-        sp_GID <- rowSums(dd$X2[sp,,,], c(2,3,4))
-        sp_centroids <- c()
+      
+      
+      sp_GID <- rowSums(dd$X2[sp,,,], c(2,3,4))
+      sp_centroids <- c()
         for(j in 1:dd$nsite){
           if(sp_GID[j] >= 1){
             sp_centroids <- sp_centroids %>% base::append(st_centroid(grid[j,])$x)
 
           }
         }
-        
-        sp_poly[[i]] <- st_convex_hull(st_union(sp_centroids))
-      }
+
+      sp_poly <- st_convex_hull(st_union(sp_centroids))
+      grid_size <- sqrt(dd$nsite.old)
+      mtrx <- st_intersects(st_as_sf(grid),
+                             st_as_sf(sp_poly))
+      matrix_ls <- matrix(as.matrix(mtrx), nrow=grid_size, ncol=grid_size)
       
-      matrix_ls <- list()
-      n_poly <- dd$nsp
-      grid_size <- sqrt(dd$nsite)
-      
-      for(i in 1:n_poly){
-        mtrx <- st_intersects(st_as_sf(grid), 
-                              st_as_sf(sp_poly[[i]]))
-        matrix_ls[[i]] <- matrix(as.matrix(mtrx), nrow=grid_size, ncol=grid_size)
-      }
-      
-      dd$sp.range2 <- array(unlist(matrix_ls), dim=c(dd$nsp, dd$nsite))
-      
-      vis.arr[!dd$sp.range2[sp,],,] <- 0
+      vector_range <- as.vector(matrix_ls)
+      vis.arr[!vector_range[site.keep],,] <- 0
       tmp <- which(vis.arr==1, arr.ind=TRUE)
       indices <- cbind(rep(sp,nrow(tmp)),tmp)
+      
     }
     if(limit.to.range=='no'){ # unrestricted with respect to species' ranges
       vis.arr[!dd$sp.range[sp,],,] <- 1
