@@ -9,11 +9,19 @@ library(sf); library(cowplot); library(maps); library(mapdata)
 library(ggpubr); library(nimble); library(raster); library(lubridate)
 library(reclin); library(sp); library(rgdal); library(geosphere)
 
-# source prewritten functions from the simulation studies
+# set the project crs to North American Equal Area Conic (Albers)
+crs_1 <- "+proj=aea +lat_1=20 +lat_2=60 +lat_0=40 +lon_0=-96 +x_0=0 +y_0=0 +ellps=GRS80 +datum=NAD83 +units=m"
+
+# source prewritten functions from the simulation studies, modified slightly to deal with 
+# real world data
 source('prep_data_real.R')
 
 # load a basemap
-basemap <- map_data("usa")
+basemap <- st_read("../../../../../000_DataResources/shapefiles/stateProvince/ne_50m_admin_1_states_provinces.shp") %>%
+  st_crop(xmin=-100, xmax=-50,
+          ymin=20, ymax=50)
+basemap <- basemap %>% 
+  st_transform(crs_1)
 
 # read in GBIF and iDigBio data
 gbif_dat <- fread("../data/gbif.csv", 
@@ -105,11 +113,13 @@ test <- gbif_dat %>%
 ###############################################################################
 # convert the occurrence data to a spatial object
 occ_spat <- st_as_sf(occ_dat, 
-                     coords=c("decimalLongitude", "decimalLatitude"))
+                     coords=c("decimalLongitude", "decimalLatitude"),
+                     crs="+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs")
+occ_spat <- occ_spat %>% st_transform(crs_1)
 head(occ_spat)
 
-grid_1 <- st_make_grid(extent(occ_spat), cellsize=2) %>%
-  st_as_sf() %>%
+grid_1 <- st_make_grid(extent(basemap), cellsize=1000*100) %>%
+  st_as_sf(crs=crs_1) %>%
   dplyr::mutate(GID=row_number())
 
 ggplot()+
@@ -168,12 +178,12 @@ occ_grid <- occ_spat %>%
   unique()
 head(occ_grid)
 
-occ_grid <- occ_grid %>%
-  dplyr::mutate(year=case_when(year %in% c(1,2) ~ 1,
-                               year %in% c(3,4) ~ 2,
-                               year %in% c(5,6) ~ 3,
-                               year %in% c(7,8) ~ 4,
-                               year %in% c(9,10) ~ 5))
+# occ_grid <- occ_grid %>%
+#   dplyr::mutate(year=case_when(year %in% c(1,2) ~ 1,
+#                                year %in% c(3,4) ~ 2,
+#                                year %in% c(5,6) ~ 3,
+#                                year %in% c(7,8) ~ 4,
+#                                year %in% c(9,10) ~ 5))
 head(occ_grid)
 
 ggplot()+
@@ -199,12 +209,12 @@ com_clusters <- grid_1 %>%
   dplyr::select(SPID, era, year, GID, cluster) %>%
   unique()
 
-com_clusters <- com_clusters %>%
-  dplyr::mutate(year=case_when(year %in% c(1,2) ~ 1,
-                               year %in% c(3,4) ~ 2,
-                               year %in% c(5,6) ~ 3,
-                               year %in% c(7,8) ~ 4,
-                               year %in% c(9,10) ~ 5))
+# com_clusters <- com_clusters %>%
+#   dplyr::mutate(year=case_when(year %in% c(1,2) ~ 1,
+#                                year %in% c(3,4) ~ 2,
+#                                year %in% c(5,6) ~ 3,
+#                                year %in% c(7,8) ~ 4,
+#                                year %in% c(9,10) ~ 5))
 
 com_clusters_count <- com_clusters %>%
   dplyr::select(GID, era, year, cluster) %>%
@@ -292,7 +302,7 @@ size_clusters[1]/nrow(all_clusters)
 X <- array(0, dim=c(nsp=nrow(sp_list),
                nsite=nrow(grid_1),
                nyr=5,
-               nvisit=5))
+               nvisit=10))
 
 for(i in 1:nrow(occ_grid)){
   X[occ_grid$SPID[i],
@@ -301,11 +311,11 @@ for(i in 1:nrow(occ_grid)){
             occ_grid$year[i]] <- 1
 }
 Z <- apply(X, c(1,2,3), sum)
-dd <- list(Z=Z, X=X, nsite=nrow(grid_1), nsp=nrow(sp_list), nyr=5, nvisit=5,
+dd <- list(Z=Z, X=X, nsite=nrow(grid_1), nsp=nrow(sp_list), nyr=5, nvisit=10,
            vis.arr=array(1, dim=c(nsp=nrow(sp_list),
                                   nsite=nrow(grid_1),
                                   nyr=5,
-                                  nvisit=5)),
+                                  nvisit=10)),
            sp.range=res)
 
 test <- occ_grid %>%
@@ -413,13 +423,13 @@ ms_nimble <- nimbleCode({
       ## occupancy
       logit(psi[yr,sp]) <-
         mu.psi.0 +
-        psi.yr[sp]*(yr-1) +
+        psi.yr[sp]*(yr) +
         psi.sp[sp]
       ## detection
       for(site in 1:nsite) {
         logit(p[site,yr,sp]) <-
           mu.p.0 +
-          p.yr*(yr-1) +
+          p.yr*(yr) +
           p.sp[sp] +
           p.site[site,yr]
       }
@@ -463,5 +473,5 @@ params <- c('mu.p.0',
             'sigma.psi.yr')
 
 # save workspace to port to ComputeCanada
-save.image("ODE_env.RData")
+save.image("ODE_env_100x100km_10occInt.RData")
 
