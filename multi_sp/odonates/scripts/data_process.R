@@ -202,7 +202,9 @@ com_clusters <- all_clusters %>%
   left_join(sp_list) %>%
   filter(!is.na(SPID))
   
-com_clusters <- st_as_sf(com_clusters, coords=c('decimalLongitude', 'decimalLatitude'))
+com_clusters <- st_as_sf(com_clusters, coords=c('decimalLongitude', 'decimalLatitude'),
+                         crs="+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs")
+com_clusters <- com_clusters %>% st_transform(crs=crs_1)
 
 com_clusters <- grid_1 %>%
   st_intersection(com_clusters) %>%
@@ -274,15 +276,15 @@ pre_filter <- com_cluster_visit %>%
   unique()
 mean(pre_filter$ave)
 
-ggplot()+
-  geom_histogram(test, mapping=aes(x=prop), 
-                 binwidth=0.05, fill="grey50", color="white")+
-  scale_x_continuous(limits=c(0.45,1.05),
-                     breaks=seq(0.5,1,0.05))+
-  xlab("Proportion of Community Visits")+
-  ylab("Frequency")+
-  theme_cowplot()+
-  background_grid()
+# ggplot()+
+#   geom_histogram(test, mapping=aes(x=prop), 
+#                  binwidth=0.05, fill="grey50", color="white")+
+#   scale_x_continuous(limits=c(0.45,1.05),
+#                      breaks=seq(0.5,1,0.05))+
+#   xlab("Proportion of Community Visits")+
+#   ylab("Frequency")+
+#   theme_cowplot()+
+#   background_grid()
 
 occ_grid <- occ_grid %>%
   dplyr::mutate(key=paste0(era, year, GID))
@@ -334,13 +336,13 @@ test_ave <- test %>% group_by(era) %>%
   ungroup() %>%
   dplyr::select(era, ave) %>% unique()
 
-ggplot()+
-  geom_line(visits_ind, mapping=aes(x=yr, y=n, group=site), size=1)+
-  scale_color_viridis_c()+
-  xlab("Era")+
-  ylab("Number of Site/Year Visits")+
-  theme_cowplot()+
-  background_grid()
+# ggplot()+
+#   geom_line(visits_ind, mapping=aes(x=yr, y=n, group=site), size=1)+
+#   scale_color_viridis_c()+
+#   xlab("Era")+
+#   ylab("Number of Site/Year Visits")+
+#   theme_cowplot()+
+#   background_grid()
 
 # all_all modeling case
 dd_all_all <- dd
