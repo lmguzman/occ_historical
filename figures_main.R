@@ -7,19 +7,17 @@ library(Metrics)
 library(stringr)
 library(ggthemes)
 
-
-
 ###### Main effect data processing workflow x interaction with Main effect of prob of community visits
 
 p2<- readRDS("all_outputs/p2_out.rds")
 
 summarised_rmse <- p2[mu.v.yr == 0 & term %in% c("mu.psi.yr", "p.yr") & nyr == 10][,.(rmse_vals = rmse(true_val, estimate), N = .N), 
                                                     by = .(visit_mod, term, nyr, prop.visits.same)] %>%
-  dplyr::mutate(nyr=paste(nyr, "eras"))
+  dplyr::mutate(nyr=paste(nyr, "OIs"))
 
 summarised_rmse$term <- factor(summarised_rmse$term, 
                                levels=c("mu.psi.yr", "p.yr"),
-                               labels=c(expression(mu[psi~",era"]),expression(p["era"])))
+                               labels=c(expression(mu[psi~",OI"]),expression(p["OI"])))
 
 plot_wf_prob_com <- summarised_rmse %>% 
   ggplot(aes(x = prop.visits.same, y = rmse_vals, colour = visit_mod, group = visit_mod)) +
@@ -37,7 +35,7 @@ plot_wf_prob_com <- summarised_rmse %>%
                         labels = c(expression("WF"["all,all"]), 
                                    expression("WF"["all,detected"]),
                                    expression("WF"["all,visits"])))
-  
+plot_wf_prob_com
 
 
   

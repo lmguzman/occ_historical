@@ -8,6 +8,7 @@ library(stringr)
 source('multi_sp/simulation/src/prep_data3.R')
 
 file_sim <- list.files("multi_sp/p4/outputs/sim.data/")
+file_diff <- list.files("multi_sp/p4/outputs/model.res/revision")
 
 run_prep_model <- function(file, case, range, model, time.interval.yr, time.interval.visit=3){
   
