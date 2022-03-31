@@ -1,5 +1,3 @@
-# Odonate figures
-
 # Load libraries
 library(tidyverse); library(cowplot); library(ggpubr);
 library(stringr); library(mcmcr); library(coda);
@@ -7,9 +5,10 @@ library(purrr); library(data.table); library(tidybayes);
 library(modelr); library(colorspace); library(gridExtra)
 
 # Load in .RDS files from Compute Canada runs
+ode_all_range <- readRDS("../output/ODE_res_all_range.rds")
 ode_det_all <- readRDS("../output/ODE_res_det_all.rds")
 ode_det_range <- readRDS("../output/ODE_res_det_range.rds")
-ode_det_range2 <- readRDS("../output/ODE_res_det_range_2.rds")
+ode_det_range2 <- readRDS("../output/ODE_res_det_range_com.rds")
 
 # Detected-All Model (MODEL 5)
 samplech1 <- as.mcmc(ode_det_all$chain1)
