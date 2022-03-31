@@ -45,22 +45,22 @@ p2<- readRDS("all_outputs/p2_out.rds")
 
 
 summarised_rmse <- p2[mu.v.yr == 0 & term %in% c("mu.psi.yr", "p.yr")][,.(rmse_vals = rmse(true_val, estimate), N = .N), 
-                                                                                   by = .(visit_mod, term, nyr, prop.visits.same)]  %>% 
+                                                                                   by = .(visit_mod, term, eras, prop.visits.same)]  %>% 
   mutate(prop.visits.same = as.numeric(prop.visits.same))
 
 
-summarised_rmse$nyr <- factor(summarised_rmse$nyr, 
-                              levels = c("2", "5", "10"), 
-                              labels = c(expression("2"~" Eras"),expression("5"~" Eras"),expression("10"~" Eras")))
+summarised_rmse$nyr <- factor(summarised_rmse$eras, 
+                              levels = c("eras2", "eras5", "eras10"), 
+                              labels = c(expression("2"~" OIs"),expression("5"~" OIs"),expression("10"~" OIs")))
 
 summarised_rmse$term <- factor(summarised_rmse$term, 
                         levels=c("mu.psi.yr", "p.yr"),
-                        labels=c(expression(mu[psi~",era"]),expression(p["era"])))
+                        labels=c(expression(mu[psi~",OI"]),expression(p["OI"])))
 
 
 data_text <- data.frame(label = c("e.", "a.", "c.", "f.", "b.", 'd.'),  # Create data for text
                         x = c(-0.04),
-                        y = c(0.38)) %>% 
+                        y = c(8)) %>% 
   bind_cols(expand.grid(nyr = unique(summarised_rmse$nyr), term = unique(summarised_rmse$term)))
 
 
@@ -85,12 +85,14 @@ plot_wf_prob_com_nyr <-  ggplot() +
         legend.text = element_text(size = 20),
         axis.line=element_line()) + 
   scale_x_continuous(limits=c(-0.05,1)) + 
-  scale_y_continuous(limits=c(0,0.4)) +
+  scale_y_log10(limits=c(0.01,10),
+                breaks = scales::trans_breaks("log10", function(x) 10^x, n=3),
+                labels = scales::trans_format("log10", scales::math_format(10^.x))) +
   geom_text(data = data_text, aes(x = x, y = y,label = label), size = 6)
 
 plot_wf_prob_com_nyr
 
-ggsave(plot_wf_prob_com_nyr, filename = "figures_clean/nyr_pcom.pdf", height = 8)
+ggsave(plot_wf_prob_com_nyr, filename = "figures_clean/nyr_pcom.pdf", height = 8, width=10)
 
 
 ####### effect of range #####
@@ -98,21 +100,21 @@ ggsave(plot_wf_prob_com_nyr, filename = "figures_clean/nyr_pcom.pdf", height = 8
 p2<- readRDS("all_outputs/p2_out.rds")
 
 summarised_rmse_p2 <- p2[mu.v.yr == 0 & term %in% c("mu.psi.yr", "p.yr") & nyr == 5][,.(rmse_vals = rmse(true_val, estimate), N = .N), 
-                                                                                   by = .(visit_mod, term, nyr, prop.visits.same)] %>% 
+                                                                                   by = .(visit_mod, term, eras, prop.visits.same)] %>% 
   mutate(scenario = "p2")
 
 
 p4_ignored<- readRDS("all_outputs/p4_all_uncensored.rds")
 
 summarised_rmse_p4_ig <- p4_ignored[visit_sim == 0 & term %in% c("mu.psi.yr", "p.yr") & nyr ==5][,.(rmse_vals = rmse(true_val, estimate), N = .N), 
-                                                                                      by = .(visit_mod, term, nyr, prop.visits.same)] %>% 
+                                                                                      by = .(visit_mod, term, eras, prop.visits.same)] %>% 
   mutate(scenario = "p4_ig")
 
 
 p4_cen<- readRDS("all_outputs/p4_all_censored.rds")
 
 summarised_rmse_p4_cen <- p4_cen[visit_sim == 0 & term %in% c("mu.psi.yr", "p.yr") & nyr == 5][,.(rmse_vals = rmse(true_val, estimate), N = .N), 
-                                                                                                   by = .(visit_mod, term, nyr, prop.visits.same)] %>% 
+                                                                                                   by = .(visit_mod, term, eras, prop.visits.same)] %>% 
   mutate(scenario = "p4_cen")
 
 
