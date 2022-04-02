@@ -1,7 +1,9 @@
 dynamic/sim*/outputs/model.res
 dynamic/sim*/outputs/sim.data
-multi_sp/sim*/outputs/model.res
-multi_sp/sim*/outputs/sim.data
+analysis/sim*/outputs/model.res
+analysis/sim*/outputs/sim.data
+multi_sp/*
+
 dynamic/data
 .Rproj.user
 .Rhistory

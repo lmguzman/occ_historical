@@ -17,7 +17,7 @@ crs_1 <- "+proj=aea +lat_1=20 +lat_2=60 +lat_0=40 +lon_0=-96 +x_0=0 +y_0=0 +ellp
 source('prep_data_real.R')
 
 # load a basemap
-basemap <- st_read("../../../../../DataResources/Shapefiles/ne_10m_admin_0_countries.shp")
+basemap <- st_read("ne_50m_admin_1_state_provinces.shp")
 basemap <- basemap %>% 
   st_transform(crs_1)
 
@@ -330,7 +330,7 @@ test_ave <- test %>% group_by(era) %>%
 
 # all_range model
 dd_all_range <- dd
-dd_all_range_prep <- prep.data(dd_all_all, limit.to.visits="all", 
+dd_all_range_prep <- prep.data(dd_all_range, limit.to.visits="all", 
                              limit.to.range="yes")
 
 # detected_all modeling case
@@ -453,5 +453,5 @@ params <- c('mu.p.0',
             'sigma.psi.yr')
 
 # save workspace to port to ComputeCanada
-save.image("ODE_env_200x200km_5occInt.RData")
+save.image("ODE_env_200x200km_10occInt.RData")
 
