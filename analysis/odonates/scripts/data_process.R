@@ -19,6 +19,8 @@ source('prep_data_real.R')
 # load a basemap
 basemap <- st_read("ne_50m_admin_1_states_provinces.shp")
 basemap <- basemap %>% 
+  st_crop(xmin=-90, xmax=-50,
+          ymin=10, ymax=50) %>%
   st_transform(crs_1)
 
 # read in GBIF and iDigBio data
@@ -120,11 +122,6 @@ grid_1 <- st_make_grid(extent(basemap), cellsize=100*1000) %>%
   st_as_sf(crs=crs_1) %>%
   dplyr::mutate(GID=row_number())
 
-ggplot()+
-  geom_sf(grid_1, mapping=aes(), fill=NA)+
-  geom_sf(sample_n(occ_spat, 5000), mapping=aes(), alpha=0.5)+
-  theme_map()
-
 # format occurrence data for data.prep function
 # there are two cases here, all and detection. All includes
 # all species at all sites, detection sites where one other species
@@ -164,39 +161,24 @@ sp_list <- sp_list %>% as.data.frame()
 colnames(sp_list) <- c("species")
 
 sp_list <- sp_list %>%
-dplyr::mutate(SPID=row_number())
+  dplyr::mutate(SPID=row_number())
 
 occ_grid <- occ_spat %>%
   st_intersection(grid_1) %>%
-  dplyr::mutate(era=(year-year%%5)) %>%
+  dplyr::mutate(era=(year-year%%10)) %>%
   dplyr::mutate(year=(year-era)+1) %>%
-  dplyr::mutate(era=(era-1965)/5) %>%
+  dplyr::mutate(era=(era-1960)/10) %>%
   left_join(sp_list) %>%
   dplyr::select(SPID, era, year, GID) %>%
   unique()
 head(occ_grid)
 
-# occ_grid <- occ_grid %>%
-#   dplyr::mutate(year=case_when(year %in% c(1,2) ~ 1,
-#                                year %in% c(3,4) ~ 2,
-#                                year %in% c(5,6) ~ 3,
-#                                year %in% c(7,8) ~ 4,
-#                                year %in% c(9,10) ~ 5))
-head(occ_grid)
-
-ggplot()+
-  geom_polygon(data=basemap, mapping=aes(x=long, y=lat))+
-  #geom_sf(grid_1, mapping=aes(), fill=NA, color="grey")+
-  geom_sf(sample_n(occ_grid, 10000), mapping=aes(color=as.factor(era)), alpha=0.5)+
-  scale_x_continuous(limits=c(-93, -60))+
-  theme_map()
-
-# # merge clusters to occ_grid for community sampling investigation
+# merge clusters to occ_grid for community sampling investigation
 com_clusters <- all_clusters %>%
   dplyr::mutate(year=year(date_clean)) %>%
-  dplyr::mutate(era=(year-year%%5)) %>%
+  dplyr::mutate(era=(year-year%%10)) %>%
   dplyr::mutate(year=(year-era)+1) %>%
-  dplyr::mutate(era=(era-1965)/5) %>%
+  dplyr::mutate(era=(era-1960)/10) %>%
   left_join(sp_list) %>%
   filter(!is.na(SPID))
 
@@ -208,21 +190,14 @@ com_clusters <- grid_1 %>%
   st_intersection(com_clusters) %>%
   dplyr::select(SPID, era, year, GID, cluster) %>%
   unique()
-# 
-# # com_clusters <- com_clusters %>%
-# #   dplyr::mutate(year=case_when(year %in% c(1,2) ~ 1,
-# #                                year %in% c(3,4) ~ 2,
-# #                                year %in% c(5,6) ~ 3,
-# #                                year %in% c(7,8) ~ 4,
-# #                                year %in% c(9,10) ~ 5))
-# 
+
 com_clusters_count <- com_clusters %>%
   dplyr::select(GID, era, year, cluster) %>%
   group_by(GID, era, year) %>%
   dplyr::mutate(n=n()) %>%
   ungroup() %>%
   arrange(n)
-# 
+
 com_clusters_count <- com_clusters_count %>%
   inner_join(data.frame(table(all_clusters$cluster)), by=c("cluster"="Var1"))
 
@@ -246,7 +221,7 @@ era_grid <- era_grid %>%
 com_cluster_visit <- com_clusters_count %>%
   dplyr::select(GID, era, year) %>%
   unique()
-# 
+
 pre_filter <- com_cluster_visit %>%
   st_drop_geometry() %>%
   group_by(era, GID) %>%
@@ -260,78 +235,44 @@ pre_filter <- com_cluster_visit %>%
   unique()
 mean(pre_filter$ave)
 
-ggplot()+
-  geom_histogram(test, mapping=aes(x=prop),
-                 binwidth=0.05, fill="grey50", color="white")+
-  scale_x_continuous(limits=c(0.45,1.05),
-                     breaks=seq(0.5,1,0.05))+
-  xlab("Proportion of Community Visits")+
-  ylab("Frequency")+
-  theme_cowplot()+
-  background_grid()
-
- occ_grid <- occ_grid %>%
-   dplyr::mutate(key=paste0(era, year, GID))
+occ_grid <- occ_grid %>%
+  dplyr::mutate(key=paste0(era, year, GID))
 occ_grid_count <- nrow(occ_grid)
 
- occ_grid <- occ_grid %>%
+occ_grid <- occ_grid %>%
   dplyr::filter(key %in% com_filter$key)
 
- nrow(occ_grid)/occ_grid_count
+nrow(occ_grid)/occ_grid_count
 
- size_clusters <- table(all_clusters$cluster) %>% table()
+size_clusters <- table(all_clusters$cluster) %>% table()
 
 # percentage of single samplings
 size_clusters[1]/nrow(all_clusters)
 
 # create the master matrix of occurrences
 X <- array(0, dim=c(nsp=nrow(sp_list),
-               nsite=nrow(grid_1),
-               nyr=10,
-               nvisit=5))
+                    nsite=nrow(grid_1),
+                    nyr=5,
+                    nvisit=10))
 
 for(i in 1:nrow(occ_grid)){
   X[occ_grid$SPID[i],
-            occ_grid$GID[i], 
-            occ_grid$era[i], 
-            occ_grid$year[i]] <- 1
+    occ_grid$GID[i], 
+    occ_grid$era[i], 
+    occ_grid$year[i]] <- 1
 }
 Z <- apply(X, c(1,2,3), sum)
-dd <- list(Z=Z, X=X, nsite=nrow(grid_1), nsp=nrow(sp_list), nyr=10, nvisit=5,
+dd <- list(Z=Z, X=X, nsite=nrow(grid_1), nsp=nrow(sp_list), nyr=5, nvisit=10,
            vis.arr=array(1, dim=c(nsp=nrow(sp_list),
                                   nsite=nrow(grid_1),
-                                  nyr=10,
-                                  nvisit=5)),
+                                  nyr=5,
+                                  nvisit=10)),
            sp.range=res)
-
-test <- occ_grid %>%
-  st_drop_geometry() %>%
-  unique() %>%
-  dplyr::select(era, year, GID) %>%
-  unique() %>%
-  group_by(GID, era) %>%
-  dplyr::mutate(n=n()) %>%
-  ungroup %>%
-  dplyr::select(GID, era, n) %>%
-  unique()
-
-test_ave <- test %>% group_by(era) %>%
-  dplyr::mutate(ave=mean(n)) %>%
-  ungroup() %>%
-  dplyr::select(era, ave) %>% unique()
-
-# ggplot()+
-#   geom_line(visits_ind, mapping=aes(x=yr, y=n, group=site), size=1)+
-#   scale_color_viridis_c()+
-#   xlab("Era")+
-#   ylab("Number of Site/Year Visits")+
-#   theme_cowplot()+
-#   background_grid()
 
 # all_range model
 dd_all_range <- dd
 dd_all_range_prep <- prep.data(dd_all_range, limit.to.visits="all", 
-                             limit.to.range="yes")
+                               limit.to.range="yes")
 
 # detected_all modeling case
 dd_det_all <- dd
@@ -453,5 +394,5 @@ params <- c('mu.p.0',
             'sigma.psi.yr')
 
 # save workspace to port to ComputeCanada
-save.image("ODE_env_100x100km_10occInt_com.RData")
+save.image("ODE_env_100x100km_5occInt_com.RData")
 
