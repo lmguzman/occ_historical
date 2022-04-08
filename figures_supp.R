@@ -23,7 +23,7 @@ plot_mupsiyr <- function(mupsiyr){
            mu.v.yr = factor(mu.v.yr, levels = c(-0.1, 0, 0.1)))
   
   zero_mu.psi.yr1 <- summary_1 %>% 
-    filter(visit_mod == 'detectedno') %>% 
+    filter(visit_mod == 'detectedyes') %>% 
     ggplot() +
     geom_point(aes(x = prop.visits.same, y = mean_es)) +
     geom_errorbar(aes(x = prop.visits.same, ymin = mean_es -sd_es, ymax = mean_es +sd_es)) +
@@ -32,13 +32,13 @@ plot_mupsiyr <- function(mupsiyr){
     theme_cowplot() +
     theme(strip.background = element_blank()) +
     xlab(expression(rho[com])) + 
-    ylab(expression("Estimated change in occupancy(" ~mu[psi~",era"]~")")) +
+    ylab(expression("Estimated change in occupancy(" ~mu[psi~",OI"]~")")) +
     theme(plot.margin = unit(c(1, 0.3, 0.1, 0.1), "cm"), 
           axis.title = element_text(size = 18),
           axis.text.y = element_text(size = 15))
   
   zero_mu.psi.yr1.1 <- ggdraw(zero_mu.psi.yr1) +
-    draw_label(expression(p["era"]), 
+    draw_label(expression(p["OI"]), 
                x = 0.5, y = 0.97, size = 18) +
     #draw_label(expression(mu[nu~",era"]), 
     #           x = 0.96, y = 0.5, angle = 270) +
@@ -46,7 +46,7 @@ plot_mupsiyr <- function(mupsiyr){
                x = 0.1, y = 0.98, fontface = "bold", size = 18)
   
   zero_mu.psi.yr2 <- summary_1 %>% 
-    filter(visit_mod == 'visitsno') %>% 
+    filter(visit_mod == 'visitsyes') %>% 
     ggplot() +
     geom_point(aes(x = prop.visits.same, y = mean_es)) +
     geom_errorbar(aes(x = prop.visits.same, ymin = mean_es -sd_es, ymax = mean_es +sd_es)) +
@@ -62,9 +62,9 @@ plot_mupsiyr <- function(mupsiyr){
           axis.text.y = element_text(size = 15)) 
   
   zero_mu.psi.yr2.1 <- ggdraw(zero_mu.psi.yr2) +
-    draw_label(expression(p["era"]), 
+    draw_label(expression(p["OI"]), 
                x = 0.5, y = 0.97, size = 18) +
-    draw_label(expression(mu[nu~",era"]), 
+    draw_label(expression(mu[nu~",OI"]), 
                x = 0.97, y = 0.5, angle = 270, size = 18) +
     draw_label(expression("WF"["range,visits"]), 
                x = 0.1, y = 0.98, fontface = "bold", size = 18)

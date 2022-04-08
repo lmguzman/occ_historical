@@ -50,7 +50,7 @@ for(i in 1:length(file_sim)){
   compiled_res[[i]] <- full_join(full_join(summary_mcmc, rhat_mcmc), true_value) %>% 
     mutate(visit_sim = file_params[18], visit_mod = file_params[1], eras = file_params[2],
            r = file_params[4], nyr = file_params[10], prop.visits.same = file_params[12], mu.v.yr = file_params[14],
-           mu.psi.yr = file_params[8], s = i) %>% 
+           mu.psi.yr = file_params[8], p.yr=file_params[6], s = i) %>% 
     data.table()
   
 }
