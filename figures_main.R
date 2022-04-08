@@ -147,7 +147,7 @@ range_together <- bind_rows(summarised_rmse_p2, summarised_rmse_p4_ig, summarise
 
 range_together$scenario <- factor(range_together$scenario, 
                               levels=c("p2", "p4_ig", "p4_cen"),
-                              labels=c(expression("Sim"["all"]~"WF"["all,X"]), expression("Sim"["range"]~"WF"["all,X"]), expression("WF"["range,X"])))
+                              labels=c(expression("Sim"["all"]~"WF"["all,X"]), expression("Sim"["range"]~"WF"["all,X"]), expression("Sim"["range"]~"WF"["range,X"])))
 
 data_text <- data.frame(label = c("a.", "c.", "e.", "b.", "d.", 'f.'),  # Create data for text
                         x = c(-0.04),
