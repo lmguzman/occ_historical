@@ -1,8 +1,4 @@
-dynamic/sim*/outputs/model.res
-dynamic/sim*/outputs/sim.data
-analysis/sim*/outputs/model.res
-analysis/sim*/outputs/sim.data
-multi_sp/*
+*.zip
 
 dynamic/data
 .Rproj.user
