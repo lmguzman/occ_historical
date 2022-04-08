@@ -127,7 +127,7 @@ M5_plot_inner <- ggplot()+
 
 M5_plot <- M5_plot +
   annotation_custom(ggplotGrob(M5_plot_inner),
-                    xmin=7, xmax=10,
+                    xmin=5, xmax=10,
                     ymin=0, ymax=0.5)
 
 # All-Range Model (MODEL 7)
@@ -244,7 +244,7 @@ M7_plot_inner <- ggplot()+
 
 M7_plot <- M7_plot +
   annotation_custom(ggplotGrob(M7_plot_inner),
-                    xmin=7, xmax=10,
+                    xmin=5, xmax=10,
                     ymin=0, ymax=0.5)
 
 # Detected-Range Model (MODEL 8)
@@ -364,7 +364,7 @@ M8_plot_inner <- ggplot()+
 
 M8_plot <- M8_plot +
   annotation_custom(ggplotGrob(M8_plot_inner),
-                    xmin=7, xmax=10,
+                    xmin=5, xmax=10,
                     ymin=0, ymax=0.5)
 
 # Detected-Range Model (MODEL 8)
@@ -485,7 +485,7 @@ M8_plot2_inner <- ggplot()+
 
 M8_plot2 <- M8_plot2 +
   annotation_custom(ggplotGrob(M8_plot2_inner),
-                    xmin=7, xmax=10,
+                    xmin=5, xmax=10,
                     ymin=0, ymax=0.5)
 
 sp_list <- sp_list %>%
