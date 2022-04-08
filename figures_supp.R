@@ -8,10 +8,11 @@ library(dplyr)
 
 case <- 'p5'
 
-output_p <- readRDS(paste0("multi_sp/",case,"/outputs/model.summary/all_outputs.rds"))
+output_p <- readRDS(paste0("all_outputs/p5_out.rds"))
+
+fact <- nrow(dplyr::filter(output_p, term=="mu.psi.yr") %>% dplyr::select(term, estimate))
 
 output_p[rhat > 1.1]
-
 
 plot_mupsiyr <- function(mupsiyr){
   
