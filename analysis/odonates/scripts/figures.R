@@ -5,10 +5,10 @@ library(purrr); library(data.table); library(tidybayes);
 library(modelr); library(colorspace); library(gridExtra)
 
 # Load in .RDS files from Compute Canada runs
-ode_all_range <- readRDS("../output/ODE_res_all_range.rds")
-ode_det_all <- readRDS("../output/ODE_res_det_all.rds")
-ode_det_range <- readRDS("../output/ODE_res_det_range.rds")
-ode_det_range2 <- readRDS("../output/ODE_res_det_range_com.rds")
+ode_all_range <- readRDS("../output/ODE_res_all_range2.rds")
+ode_det_all <- readRDS("../output/ODE_res_det_all2.rds")
+ode_det_range <- readRDS("../output/ODE_res_det_range2.rds")
+ode_det_range2 <- readRDS("../output/ODE_res_det_range2_com.rds")
 
 # Detected-All Model (MODEL 5)
 samplech1 <- as.mcmc(ode_det_all$chain1)
@@ -41,7 +41,7 @@ for(ss in 1:195){
     
     c(mean=mean(chains), quantile(chains, probs=c(0.025,0.975)))
   }
-  x.vals <- seq(from=1, to=10, length=10)
+  x.vals <- seq(from=1, to=5, length=5)
   
   y.vals <- lapply(x.vals, get.y.val)
   y.vals2_spp <- do.call(rbind, y.vals)
@@ -61,7 +61,7 @@ get.y.val <- function(dd){
   
   c(mean=mean(chains), quantile(chains, probs=c(0.025,0.975)))
 }
-x.vals <- seq(from=1, to=10, length=10)
+x.vals <- seq(from=1, to=5, length=5)
 y.vals <- lapply(x.vals, get.y.val)
 y.vals2_com <- do.call(rbind, y.vals) %>% as.data.frame()
 
@@ -86,18 +86,19 @@ M5_plot <- ggplot()+
                                       title.position = "top", barwidth=8, 
                                       label.theme=element_text(size=8, angle=0)
                                     ), limits=c(-0.4, 0.4))+
-  geom_line(y.vals2_com, mapping=aes(x=c(1:10), y=mean), size=1, linetype=1,
+  geom_line(y.vals2_com, mapping=aes(x=c(1:5), y=mean), size=1, linetype=1,
             color="grey10", alpha=0.8)+
-  geom_line(y.vals2_com, mapping=aes(x=c(1:10), y=`2.5%`), size=1, linetype=2,
+  geom_line(y.vals2_com, mapping=aes(x=c(1:5), y=`2.5%`), size=1, linetype=2,
             color="grey10", alpha=0.8)+
-  geom_line(y.vals2_com, mapping=aes(x=c(1:10), y=`97.5%`), size=1, linetype=2,
+  geom_line(y.vals2_com, mapping=aes(x=c(1:5), y=`97.5%`), size=1, linetype=2,
             color="grey10", alpha=0.8)+
   ylab("Occupancy Probability")+
   xlab("")+
   scale_y_continuous(limits=c(0,1))+
-  scale_x_continuous(breaks=c(1:10))+
+  scale_x_continuous(breaks=c(1:5), labels=c("1970-1979", "1980-1989", "1990-1999",
+                                             "2000-2009", "2010-2019"))+
   theme_cowplot()+
-  theme(legend.position="bottom", legend.box = "horizontal")+
+  theme(legend.position="bottom", legend.box = "horizontal", axis.text.x = element_text(size=9))+
   background_grid()
 M5_plot
 
@@ -114,6 +115,7 @@ y.vals2_sum <- y.vals2_spp %>%
 M5_plot_inner <- ggplot()+
   geom_vline(xintercept=0, linetype=2)+
   geom_histogram(y.vals2_sum, mapping=aes(x=diff), binwidth=0.025)+
+  scale_x_continuous(limits=c(-1,1))+
   xlab("Shift in Occupancy Probability")+
   ylab("Frequency")+
   theme_half_open()+
@@ -122,7 +124,7 @@ M5_plot_inner <- ggplot()+
 
 M5_plot <- M5_plot +
   annotation_custom(ggplotGrob(M5_plot_inner),
-                    xmin=6, xmax=10,
+                    xmin=2, xmax=5,
                     ymin=0, ymax=0.5)
 
 # All-Range Model (MODEL 7)
@@ -156,7 +158,7 @@ for(ss in 1:195){
     
     c(mean=mean(chains), quantile(chains, probs=c(0.025,0.975)))
   }
-  x.vals <- seq(from=1, to=10, length=10)
+  x.vals <- seq(from=1, to=5, length=5)
   
   y.vals <- lapply(x.vals, get.y.val)
   y.vals2_spp <- do.call(rbind, y.vals)
@@ -176,7 +178,7 @@ get.y.val <- function(dd){
   
   c(mean=mean(chains), quantile(chains, probs=c(0.025,0.975)))
 }
-x.vals <- seq(from=1, to=10, length=10)
+x.vals <- seq(from=1, to=5, length=5)
 y.vals <- lapply(x.vals, get.y.val)
 y.vals2_com <- do.call(rbind, y.vals) %>% as.data.frame()
 
@@ -201,17 +203,19 @@ M7_plot <- ggplot()+
                                       title.position = "top", barwidth=8, 
                                       label.theme=element_text(size=8, angle=0)
                                     ), limits=c(-0.4, 0.4))+
-  geom_line(y.vals2_com, mapping=aes(x=c(1:10), y=mean), size=1, linetype=1,
+  geom_line(y.vals2_com, mapping=aes(x=c(1:5), y=mean), size=1, linetype=1,
             color="grey10", alpha=0.8)+
-  geom_line(y.vals2_com, mapping=aes(x=c(1:10), y=`2.5%`), size=1, linetype=2,
+  geom_line(y.vals2_com, mapping=aes(x=c(1:5), y=`2.5%`), size=1, linetype=2,
             color="grey10", alpha=0.8)+
-  geom_line(y.vals2_com, mapping=aes(x=c(1:10), y=`97.5%`), size=1, linetype=2,
+  geom_line(y.vals2_com, mapping=aes(x=c(1:5), y=`97.5%`), size=1, linetype=2,
             color="grey10", alpha=0.8)+
   scale_y_continuous(limits=c(0,1))+
-  scale_x_continuous(breaks=c(1:10))+
+  scale_x_continuous(breaks=c(1:5), labels=c("1970-1979", "1980-1989", "1990-1999",
+                                             "2000-2009", "2010-2019"))+
   ylab("")+
   xlab("")+
   theme_cowplot()+
+  theme(axis.text.x = element_text(size=9))+
   background_grid()
 M7_plot
 
@@ -225,6 +229,7 @@ y.vals2_sum <- y.vals2_spp %>%
 M7_plot_inner <- ggplot()+
   geom_vline(xintercept=0, linetype=2)+
   geom_histogram(y.vals2_sum, mapping=aes(x=diff), binwidth=0.025)+
+  scale_x_continuous(limits=c(-1,1))+
   xlab("Shift in Occupancy Probability")+
   ylab("Frequency")+
   theme_half_open()+
@@ -233,7 +238,7 @@ M7_plot_inner <- ggplot()+
 
 M7_plot <- M7_plot +
   annotation_custom(ggplotGrob(M7_plot_inner),
-                    xmin=6, xmax=10,
+                    xmin=2, xmax=5,
                     ymin=0, ymax=0.5)
 
 # Detected-Range Model (MODEL 8)
@@ -267,7 +272,7 @@ for(ss in 1:195){
     
     c(mean=mean(chains), quantile(chains, probs=c(0.025,0.975)))
   }
-  x.vals <- seq(from=1, to=10, length=10)
+  x.vals <- seq(from=1, to=5, length=5)
   
   y.vals <- lapply(x.vals, get.y.val)
   y.vals2_spp <- do.call(rbind, y.vals)
@@ -287,7 +292,7 @@ get.y.val <- function(dd){
   
   c(mean=mean(chains), quantile(chains, probs=c(0.025,0.975)))
 }
-x.vals <- seq(from=1, to=10, length=10)
+x.vals <- seq(from=1, to=5, length=5)
 y.vals <- lapply(x.vals, get.y.val)
 y.vals2_com <- do.call(rbind, y.vals) %>% as.data.frame()
 
@@ -312,17 +317,19 @@ M8_plot <- ggplot()+
                                       title.position = "top", barwidth=8, 
                                       label.theme=element_text(size=8, angle=0)
                                     ), limits=c(-0.4, 0.4))+
-  geom_line(y.vals2_com, mapping=aes(x=c(1:10), y=mean), size=1, linetype=1,
+  geom_line(y.vals2_com, mapping=aes(x=c(1:5), y=mean), size=1, linetype=1,
             color="grey10", alpha=0.8)+
-  geom_line(y.vals2_com, mapping=aes(x=c(1:10), y=`2.5%`), size=1, linetype=2,
+  geom_line(y.vals2_com, mapping=aes(x=c(1:5), y=`2.5%`), size=1, linetype=2,
             color="grey10", alpha=0.8)+
-  geom_line(y.vals2_com, mapping=aes(x=c(1:10), y=`97.5%`), size=1, linetype=2,
+  geom_line(y.vals2_com, mapping=aes(x=c(1:5), y=`97.5%`), size=1, linetype=2,
             color="grey10", alpha=0.8)+
   ylab("Occupancy Probability")+
-  xlab("Era")+
+  xlab("Occupancy Interval")+
   scale_y_continuous(limits=c(0,1))+
-  scale_x_continuous(breaks=c(1:10))+
+  scale_x_continuous(breaks=c(1:5), labels=c("1970-1979", "1980-1989", "1990-1999",
+                                             "2000-2009", "2010-2019"))+
   theme_cowplot()+
+  theme(axis.text.x = element_text(size=9))+
   background_grid()
 M8_plot
 
@@ -339,6 +346,7 @@ y.vals2_sum <- y.vals2_spp %>%
 M8_plot_inner <- ggplot()+
   geom_vline(xintercept=0, linetype=2)+
   geom_histogram(y.vals2_sum, mapping=aes(x=diff), binwidth=0.025)+
+  scale_x_continuous(limits=c(-1,1))+
   xlab("Shift in Occupancy Probability")+
   ylab("Frequency")+
   theme_half_open()+
@@ -347,7 +355,7 @@ M8_plot_inner <- ggplot()+
 
 M8_plot <- M8_plot +
   annotation_custom(ggplotGrob(M8_plot_inner),
-                    xmin=6, xmax=10,
+                    xmin=2, xmax=5,
                     ymin=0, ymax=0.5)
 
 # Detected-Range Model (MODEL 8)
@@ -381,7 +389,7 @@ for(ss in 1:195){
     
     c(mean=mean(chains), quantile(chains, probs=c(0.025,0.975)))
   }
-  x.vals <- seq(from=1, to=10, length=10)
+  x.vals <- seq(from=1, to=5, length=5)
   
   y.vals <- lapply(x.vals, get.y.val)
   y.vals2_spp <- do.call(rbind, y.vals)
@@ -401,7 +409,7 @@ get.y.val <- function(dd){
   
   c(mean=mean(chains), quantile(chains, probs=c(0.025,0.975)))
 }
-x.vals <- seq(from=1, to=10, length=10)
+x.vals <- seq(from=1, to=5, length=5)
 y.vals <- lapply(x.vals, get.y.val)
 y.vals2_com <- do.call(rbind, y.vals) %>% as.data.frame()
 
@@ -426,17 +434,19 @@ M8_plot2 <- ggplot()+
                                       title.position = "top", barwidth=8, 
                                       label.theme=element_text(size=8, angle=0)
                                     ), limits=c(-0.4, 0.4))+
-  geom_line(y.vals2_com, mapping=aes(x=c(1:10), y=mean), size=1, linetype=1,
+  geom_line(y.vals2_com, mapping=aes(x=c(1:5), y=mean), size=1, linetype=1,
             color="grey10", alpha=0.8)+
-  geom_line(y.vals2_com, mapping=aes(x=c(1:10), y=`2.5%`), size=1, linetype=2,
+  geom_line(y.vals2_com, mapping=aes(x=c(1:5), y=`2.5%`), size=1, linetype=2,
             color="grey10", alpha=0.8)+
-  geom_line(y.vals2_com, mapping=aes(x=c(1:10), y=`97.5%`), size=1, linetype=2,
+  geom_line(y.vals2_com, mapping=aes(x=c(1:5), y=`97.5%`), size=1, linetype=2,
             color="grey10", alpha=0.8)+
   ylab("")+
-  xlab("Era")+
+  xlab("Occupancy Interval")+
   scale_y_continuous(limits=c(0,1))+
-  scale_x_continuous(breaks=c(1:10))+
+  scale_x_continuous(breaks=c(1:5), labels=c("1970-1979", "1980-1989", "1990-1999",
+                                             "2000-2009", "2010-2019"))+
   theme_cowplot()+
+  theme(axis.text.x = element_text(size=9))+
   background_grid()
 M8_plot2
 
@@ -454,6 +464,7 @@ y.vals2_sum <- y.vals2_spp %>%
 M8_plot2_inner <- ggplot()+
   geom_vline(xintercept=0, linetype=2)+
   geom_histogram(y.vals2_sum, mapping=aes(x=diff), binwidth=0.025)+
+  scale_x_continuous(limits=c(-1,1))+
   xlab("Shift in Occupancy Probability")+
   ylab("Frequency")+
   theme_half_open()+
@@ -462,7 +473,7 @@ M8_plot2_inner <- ggplot()+
 
 M8_plot2 <- M8_plot2 +
   annotation_custom(ggplotGrob(M8_plot2_inner),
-                    xmin=6, xmax=10,
+                    xmin=2, xmax=5,
                     ymin=0, ymax=0.5)
 
 sp_list <- sp_list %>%
@@ -488,4 +499,4 @@ odesPlotFinal <- plot_grid(odesPlot, bottomPlot, nrow=2,
                            rel_heights=c(0.9,0.12))
 odesPlotFinal
 
-ggsave("../output/odesFigure.pdf", odesPlotFinal, dpi=350, height=8, width=8)
+ggsave("../output/odesFigure2.pdf", odesPlotFinal, dpi=350, height=10, width=12)

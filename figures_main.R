@@ -90,7 +90,7 @@ plot_wf_prob_com_nyr <-  ggplot() +
 
 plot_wf_prob_com_nyr
 
-ggsave(plot_wf_prob_com_nyr, filename = "figures_clean/nyr_pcom.pdf", height = 8, width=10)
+ggsave(plot_wf_prob_com_nyr, filename = "figures_clean/nyr_pcom.pdf", height = 10, width=10)
 
 
 ####### effect of range #####
@@ -180,7 +180,7 @@ plot_wf_prob_com_range <- ggplot() +
 
 plot_wf_prob_com_range
 
-ggsave(plot_wf_prob_com_range, filename = "figures_clean/range_pcom.pdf", height = 8, width=10)
+ggsave(plot_wf_prob_com_range, filename = "figures_clean/range_pcom.pdf", height = 10, width=10)
 
 
 ###### Effect of mu.v.yr
@@ -231,5 +231,5 @@ plot_wf_prob_com_visit <-  ggplot() +
 
 plot_wf_prob_com_visit
 
-ggsave(plot_wf_prob_com_visit, filename = "figures_clean/visit_pcom.pdf", height = 8, width=10)
+ggsave(plot_wf_prob_com_visit, filename = "figures_clean/visit_pcom.pdf", height = 10, width=10)
 

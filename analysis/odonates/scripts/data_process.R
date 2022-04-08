@@ -17,7 +17,7 @@ crs_1 <- "+proj=aea +lat_1=20 +lat_2=60 +lat_0=40 +lon_0=-96 +x_0=0 +y_0=0 +ellp
 source('prep_data_real.R')
 
 # load a basemap
-basemap <- st_read("ne_50m_admin_1_states_provinces.shp")
+basemap <- st_read("ne_10m_land.shp")
 basemap <- basemap %>% 
   st_crop(xmin=-90, xmax=-50,
           ymin=10, ymax=50) %>%
@@ -27,7 +27,8 @@ basemap <- basemap %>%
 gbif_dat <- fread("../data/gbif.csv", 
                   sep="\t", 
                   stringsAsFactors=FALSE, 
-                  quote="")
+                  quote="") %>%
+  dplyr::filter(coordinateUncertaintyInMeters < 100*1000 | is.na(coordinateUncertaintyInMeters))
 
 occ_dat <- gbif_dat
 
@@ -106,9 +107,6 @@ size_clusters <- table(all_clusters$cluster) %>% table()
 
 # percentage of community samplings
 size_clusters[1]/sum(size_clusters[1:length(size_clusters)])
-
-test <- gbif_dat %>%
-  dplyr::select(event)
 
 ###############################################################################
 # convert the occurrence data to a spatial object
@@ -234,6 +232,16 @@ pre_filter <- com_cluster_visit %>%
   dplyr::select(era, ave) %>%
   unique()
 mean(pre_filter$ave)
+
+com_filter2 <- dplyr::select(com_filter, era, year, GID, prop) %>% unique()
+
+ggplot()+
+  geom_histogram(com_filter2, mapping=aes(x=prop), binwidth=0.05)+
+  scale_x_continuous(breaks=seq(0.5,1,by=0.05))+
+  labs(x="Proportion of Community Visits",
+       y="Frequency")+
+  theme_half_open()+
+  background_grid()
 
 occ_grid <- occ_grid %>%
   dplyr::mutate(key=paste0(era, year, GID))
