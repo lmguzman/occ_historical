@@ -5,15 +5,11 @@ library(purrr)
 library(dplyr)
 library(data.table)
 
-# The pattern in this needs to change depending on if you are compiling range censored or
-# range uncensored model results. "No" = range uncensored.
-file_sim <- list.files("sim_range/outputs/model.res/model.res/", pattern="yes")
-
 compiled_res <- list()
 
 for(i in 1:length(file_sim)){
   
-  load(paste0("sim_range/outputs/model.res/model.res/",file_sim[i]), verbose = TRUE)
+  load(paste0("sim_all/outputs/model.res/model.res/",file_sim[i]), verbose = TRUE)
   
   file_params <- unlist(str_split(file_sim[i], "_"))
   
@@ -59,4 +55,4 @@ for(i in 1:length(file_sim)){
 
 all_outputs <- rbindlist(compiled_res)
 
-saveRDS(all_outputs, 'sim_range/outputs/model.summary/sim_range_all_censored_outputs.rds')
+saveRDS(all_outputs, 'sim_range/outputs/model.summary/sim_all_outputs.rds')

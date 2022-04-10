@@ -58,4 +58,4 @@ for(i in 1:length(file_sim)){
 
 all_outputs <- rbindlist(compiled_res)
 
-saveRDS(all_outputs, 'outputs/model.summary/p5_outputs.rds')
+saveRDS(all_outputs, 'outputs/model.summary/sim_range_supp_outputs.rds')
