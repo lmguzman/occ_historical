@@ -5,10 +5,10 @@ library(purrr); library(data.table); library(tidybayes);
 library(modelr); library(colorspace); library(gridExtra)
 
 # Load in .RDS files from Compute Canada runs
-ode_all_range <- readRDS("../output/ODE_res_all_range.rds")
-ode_det_all <- readRDS("../output/ODE_res_det_all.rds")
-ode_det_range <- readRDS("../output/ODE_res_det_range.rds")
-ode_det_range2 <- readRDS("../output/ODE_res_det_range_com.rds")
+ode_all_range <- readRDS("../output/ODE_res_all_range2.rds")
+ode_det_all <- readRDS("../output/ODE_res_det_all2.rds")
+ode_det_range <- readRDS("../output/ODE_res_det_range2.rds")
+ode_det_range2 <- readRDS("../output/ODE_res_det_range2_com.rds")
 
 # Detected-All Model (MODEL 5)
 samplech1 <- as.mcmc(ode_det_all$chain1)
@@ -41,7 +41,7 @@ for(ss in 1:195){
     
     c(mean=mean(chains), quantile(chains, probs=c(0.025,0.975)))
   }
-  x.vals <- seq(from=1, to=10, length=10)
+  x.vals <- seq(from=1, to=5, length=5)
   
   y.vals <- lapply(x.vals, get.y.val)
   y.vals2_spp <- do.call(rbind, y.vals)
@@ -61,7 +61,7 @@ get.y.val <- function(dd){
   
   c(mean=mean(chains), quantile(chains, probs=c(0.025,0.975)))
 }
-x.vals <- seq(from=1, to=10, length=10)
+x.vals <- seq(from=1, to=5, length=5)
 y.vals <- lapply(x.vals, get.y.val)
 y.vals2_com <- do.call(rbind, y.vals) %>% as.data.frame()
 
@@ -86,16 +86,16 @@ M5_plot <- ggplot()+
                                       title.position = "top", barwidth=8, 
                                       label.theme=element_text(size=8, angle=0)
                                     ), limits=c(-0.4, 0.4))+
-  geom_line(y.vals2_com, mapping=aes(x=c(1:10), y=mean), size=1, linetype=1,
+  geom_line(y.vals2_com, mapping=aes(x=c(1:5), y=mean), size=1, linetype=1,
             color="grey10", alpha=0.8)+
-  geom_line(y.vals2_com, mapping=aes(x=c(1:10), y=`2.5%`), size=1, linetype=2,
+  geom_line(y.vals2_com, mapping=aes(x=c(1:5), y=`2.5%`), size=1, linetype=2,
             color="grey10", alpha=0.8)+
-  geom_line(y.vals2_com, mapping=aes(x=c(1:10), y=`97.5%`), size=1, linetype=2,
+  geom_line(y.vals2_com, mapping=aes(x=c(1:5), y=`97.5%`), size=1, linetype=2,
             color="grey10", alpha=0.8)+
   ylab("Occupancy Probability")+
   xlab("")+
   scale_y_continuous(limits=c(0,1))+
-  scale_x_continuous(breaks=c(1:10), labels=c("1970-1974", "1975-1979", 
+  scale_x_continuous(breaks=c(1:5), labels=c("1970-1974", "1975-1979", 
                                               "1980-1984", "1985-1989",
                                               "1990-1994", "1995-1999",
                                               "2000-2004", "2005-2009",
@@ -161,7 +161,7 @@ for(ss in 1:195){
     
     c(mean=mean(chains), quantile(chains, probs=c(0.025,0.975)))
   }
-  x.vals <- seq(from=1, to=10, length=10)
+  x.vals <- seq(from=1, to=5, length=5)
   
   y.vals <- lapply(x.vals, get.y.val)
   y.vals2_spp <- do.call(rbind, y.vals)
@@ -181,7 +181,7 @@ get.y.val <- function(dd){
   
   c(mean=mean(chains), quantile(chains, probs=c(0.025,0.975)))
 }
-x.vals <- seq(from=1, to=10, length=10)
+x.vals <- seq(from=1, to=5, length=5)
 y.vals <- lapply(x.vals, get.y.val)
 y.vals2_com <- do.call(rbind, y.vals) %>% as.data.frame()
 
@@ -206,14 +206,14 @@ M7_plot <- ggplot()+
                                       title.position = "top", barwidth=8, 
                                       label.theme=element_text(size=8, angle=0)
                                     ), limits=c(-0.4, 0.4))+
-  geom_line(y.vals2_com, mapping=aes(x=c(1:10), y=mean), size=1, linetype=1,
+  geom_line(y.vals2_com, mapping=aes(x=c(1:5), y=mean), size=1, linetype=1,
             color="grey10", alpha=0.8)+
-  geom_line(y.vals2_com, mapping=aes(x=c(1:10), y=`2.5%`), size=1, linetype=2,
+  geom_line(y.vals2_com, mapping=aes(x=c(1:5), y=`2.5%`), size=1, linetype=2,
             color="grey10", alpha=0.8)+
-  geom_line(y.vals2_com, mapping=aes(x=c(1:10), y=`97.5%`), size=1, linetype=2,
+  geom_line(y.vals2_com, mapping=aes(x=c(1:5), y=`97.5%`), size=1, linetype=2,
             color="grey10", alpha=0.8)+
   scale_y_continuous(limits=c(0,1))+
-  scale_x_continuous(breaks=c(1:10), labels=c("1970-1974", "1975-1979", 
+  scale_x_continuous(breaks=c(1:5), labels=c("1970-1974", "1975-1979", 
                                               "1980-1984", "1985-1989",
                                               "1990-1994", "1995-1999",
                                               "2000-2004", "2005-2009",
@@ -278,7 +278,7 @@ for(ss in 1:195){
     
     c(mean=mean(chains), quantile(chains, probs=c(0.025,0.975)))
   }
-  x.vals <- seq(from=1, to=10, length=10)
+  x.vals <- seq(from=1, to=5, length=5)
   
   y.vals <- lapply(x.vals, get.y.val)
   y.vals2_spp <- do.call(rbind, y.vals)
@@ -298,7 +298,7 @@ get.y.val <- function(dd){
   
   c(mean=mean(chains), quantile(chains, probs=c(0.025,0.975)))
 }
-x.vals <- seq(from=1, to=10, length=10)
+x.vals <- seq(from=1, to=5, length=5)
 y.vals <- lapply(x.vals, get.y.val)
 y.vals2_com <- do.call(rbind, y.vals) %>% as.data.frame()
 
@@ -323,16 +323,16 @@ M8_plot <- ggplot()+
                                       title.position = "top", barwidth=8, 
                                       label.theme=element_text(size=8, angle=0)
                                     ), limits=c(-0.4, 0.4))+
-  geom_line(y.vals2_com, mapping=aes(x=c(1:10), y=mean), size=1, linetype=1,
+  geom_line(y.vals2_com, mapping=aes(x=c(1:5), y=mean), size=1, linetype=1,
             color="grey10", alpha=0.8)+
-  geom_line(y.vals2_com, mapping=aes(x=c(1:10), y=`2.5%`), size=1, linetype=2,
+  geom_line(y.vals2_com, mapping=aes(x=c(1:5), y=`2.5%`), size=1, linetype=2,
             color="grey10", alpha=0.8)+
-  geom_line(y.vals2_com, mapping=aes(x=c(1:10), y=`97.5%`), size=1, linetype=2,
+  geom_line(y.vals2_com, mapping=aes(x=c(1:5), y=`97.5%`), size=1, linetype=2,
             color="grey10", alpha=0.8)+
   ylab("Occupancy Probability")+
   xlab("Occupancy Interval")+
   scale_y_continuous(limits=c(0,1))+
-  scale_x_continuous(breaks=c(1:10), labels=c("1970-1974", "1975-1979", 
+  scale_x_continuous(breaks=c(1:5), labels=c("1970-1974", "1975-1979", 
                                               "1980-1984", "1985-1989",
                                               "1990-1994", "1995-1999",
                                               "2000-2004", "2005-2009",
@@ -398,7 +398,7 @@ for(ss in 1:195){
     
     c(mean=mean(chains), quantile(chains, probs=c(0.025,0.975)))
   }
-  x.vals <- seq(from=1, to=10, length=10)
+  x.vals <- seq(from=1, to=5, length=5)
   
   y.vals <- lapply(x.vals, get.y.val)
   y.vals2_spp <- do.call(rbind, y.vals)
@@ -418,7 +418,7 @@ get.y.val <- function(dd){
   
   c(mean=mean(chains), quantile(chains, probs=c(0.025,0.975)))
 }
-x.vals <- seq(from=1, to=10, length=10)
+x.vals <- seq(from=1, to=5, length=5)
 y.vals <- lapply(x.vals, get.y.val)
 y.vals2_com <- do.call(rbind, y.vals) %>% as.data.frame()
 
@@ -443,16 +443,16 @@ M8_plot2 <- ggplot()+
                                       title.position = "top", barwidth=8, 
                                       label.theme=element_text(size=8, angle=0)
                                     ), limits=c(-0.4, 0.4))+
-  geom_line(y.vals2_com, mapping=aes(x=c(1:10), y=mean), size=1, linetype=1,
+  geom_line(y.vals2_com, mapping=aes(x=c(1:5), y=mean), size=1, linetype=1,
             color="grey10", alpha=0.8)+
-  geom_line(y.vals2_com, mapping=aes(x=c(1:10), y=`2.5%`), size=1, linetype=2,
+  geom_line(y.vals2_com, mapping=aes(x=c(1:5), y=`2.5%`), size=1, linetype=2,
             color="grey10", alpha=0.8)+
-  geom_line(y.vals2_com, mapping=aes(x=c(1:10), y=`97.5%`), size=1, linetype=2,
+  geom_line(y.vals2_com, mapping=aes(x=c(1:5), y=`97.5%`), size=1, linetype=2,
             color="grey10", alpha=0.8)+
   ylab("")+
   xlab("Occupancy Interval")+
   scale_y_continuous(limits=c(0,1))+
-  scale_x_continuous(breaks=c(1:10), labels=c("1970-1974", "1975-1979", 
+  scale_x_continuous(breaks=c(1:5), labels=c("1970-1974", "1975-1979", 
                                               "1980-1984", "1985-1989",
                                               "1990-1994", "1995-1999",
                                               "2000-2004", "2005-2009",
