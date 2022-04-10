@@ -493,18 +493,18 @@ sp_list <- sp_list %>%
 
 model8.sum <- inner_join(sp_list, y.vals2_sum)
 
-write.csv(model8.sum, "../output/speciesTrends.csv")
+write.csv(model8.sum, "../output/speciesTrends_test.csv")
 
 ## combined figure
 blankPlot <- ggplot()+geom_blank(aes(1,1)) + 
   cowplot::theme_nothing()
 
-odesPlot <- plot_grid(M5_plot+theme(legend.position="none"), 
-                      ggplot()+theme_void(),
+odesPlot <- plot_grid(#M5_plot+theme(legend.position="none"), 
+                      #ggplot()+theme_void(),
                       #M7_plot+theme(legend.position="none"), 
                       M8_plot+theme(legend.position="none"), 
                       M8_plot2+theme(legend.position="none"),
-                      labels=c("a.", "b.", "c.", "d."), label_size=12)
+                      labels=c("a.", "b."), label_size=12)
 bottomPlot <- plot_grid(blankPlot, get_legend(M8_plot2), blankPlot, blankPlot, ncol=4,
                         rel_widths=c(0.1, 1, 1, 1))
 
@@ -512,4 +512,4 @@ odesPlotFinal <- plot_grid(odesPlot, bottomPlot, nrow=2,
                            rel_heights=c(0.9,0.12))
 odesPlotFinal
 
-ggsave("../output/odesFigure.pdf", odesPlotFinal, dpi=350, height=10, width=12)
+ggsave("../output/odesFigure_test.pdf", odesPlotFinal, dpi=350, height=10, width=12)

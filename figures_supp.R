@@ -6,9 +6,9 @@ library(tidyr)
 library(Metrics)
 library(dplyr)
 
-case <- 'p5'
+case <- 'sim_range_supp'
 
-output_p <- readRDS(paste0("all_outputs/p5_out.rds"))
+output_p <- readRDS(paste0("all_outputs/sim_range_supp_out.rds"))
 
 fact <- nrow(dplyr::filter(output_p, term=="mu.psi.yr") %>% dplyr::select(term, estimate))
 
@@ -71,7 +71,7 @@ plot_mupsiyr <- function(mupsiyr){
   
   zero_mu.psi.yr <- plot_grid(zero_mu.psi.yr1.1, zero_mu.psi.yr2.1)
   
-  ggsave(zero_mu.psi.yr, filename = paste0("figures_clean/p5_mu.psi.yr_",mupsiyr,".pdf"), height = 10, width = 18)
+  ggsave(zero_mu.psi.yr, filename = paste0("figures_clean/sim_range_supp_mu.psi.yr_",mupsiyr,".pdf"), height = 10, width = 18)
   
   
 }
